@@ -19,10 +19,16 @@
     },
     "homepage": "https://github.com/kreebog/MazeMasterJS-Server#readme",
     "devDependencies": {
+        "@types/express": "^4.16.0",
+        "@types/nedb": "^1.8.5",
         "@types/node": "^10.5.3",
         "@types/seedrandom": "^2.4.27"
     },
     "dependencies": {
+        "@types/pug": "^2.0.4",
+        "express": "^4.16.3",
+        "nedb": "^1.8.0",
+        "pug": "^2.0.3",
         "seedrandom": "^2.4.3"
     }
 }
