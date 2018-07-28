@@ -143,10 +143,8 @@ class Maze {
         this._cells[height - 1][finishCol].addTag(Enumerations_1.TAGS.FINISH);
         // start the carving routine
         this.carvePassage(this._cells[0][0]);
-        // mark the solution path
-        recurseDepth = 0;
-        maxRecurseDepth = 0;
         // now solve the maze and tag the path
+        recurseDepth = 0;
         this.solveAndTag();
         // then add some traps...
         if (this.challenge >= MIN_TRAPS_CHALLENGE_LEVEL) {
@@ -167,6 +165,8 @@ class Maze {
      */
     carvePassage(cell) {
         recurseDepth++;
+        if (recurseDepth > maxRecurseDepth)
+            maxRecurseDepth = recurseDepth; // track deepest level of recursion during generation
         log.trace(__filename, 'carvePassage()', util_1.format('Recursion: %d. Carving STARTED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
         // randomly sort an array of bitwise directional values (see also: Enums.Dirs)
         let dirs = [1, 2, 4, 8].sort(function (a, b) {
@@ -199,13 +199,9 @@ class Maze {
                 log.error(__filename, 'carvePassage()', util_1.format('Error getting cell [%d][%d].', ny, nx), error);
             }
         }
-        // update carve depth counters
-        if (recurseDepth > maxRecurseDepth) {
-            maxRecurseDepth = recurseDepth;
-        }
         // exiting the function relieves one level of recursion
         recurseDepth--;
-        log.trace(__filename, 'carvePassage()', util_1.format('Recursion: %d. Carve COMPLETED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
+        log.trace(__filename, 'carvePassage()', util_1.format('Max Recursion: %d. Carve COMPLETED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
     }
     /**
      * Returns a text rendering of the maze as a grid of 3x3
@@ -306,6 +302,8 @@ class Maze {
      */
     tagSolution(cellPos, pathId) {
         recurseDepth++;
+        if (recurseDepth > maxRecurseDepth)
+            maxRecurseDepth = recurseDepth; // track deepest level of recursion during generation
         let cell;
         log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Solve pass started.', recurseDepth, pathId));
         // Attempt to get the cell - if it errors we can return from this call

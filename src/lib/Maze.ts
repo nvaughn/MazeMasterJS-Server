@@ -175,11 +175,8 @@ export class Maze implements IMaze {
         // start the carving routine
         this.carvePassage(this._cells[0][0]);
 
-        // mark the solution path
-        recurseDepth = 0;
-        maxRecurseDepth = 0;
-
         // now solve the maze and tag the path
+        recurseDepth = 0;
         this.solveAndTag();
 
         // then add some traps...
@@ -203,6 +200,8 @@ export class Maze implements IMaze {
      */
     private carvePassage(cell: Cell) {
         recurseDepth++;
+        if (recurseDepth > maxRecurseDepth) maxRecurseDepth = recurseDepth; // track deepest level of recursion during generation
+
         log.trace(__filename, 'carvePassage()', fmt('Recursion: %d. Carving STARTED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
 
         // randomly sort an array of bitwise directional values (see also: Enums.Dirs)
@@ -238,14 +237,9 @@ export class Maze implements IMaze {
             }
         }
 
-        // update carve depth counters
-        if (recurseDepth > maxRecurseDepth) {
-            maxRecurseDepth = recurseDepth;
-        }
-
         // exiting the function relieves one level of recursion
         recurseDepth--;
-        log.trace(__filename, 'carvePassage()', fmt('Recursion: %d. Carve COMPLETED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
+        log.trace(__filename, 'carvePassage()', fmt('Max Recursion: %d. Carve COMPLETED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
     }
 
     /**
@@ -353,6 +347,7 @@ export class Maze implements IMaze {
      */
     private tagSolution(cellPos: Position, pathId: number) {
         recurseDepth++;
+        if (recurseDepth > maxRecurseDepth) maxRecurseDepth = recurseDepth; // track deepest level of recursion during generation
         let cell: Cell;
 
         log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Solve pass started.', recurseDepth, pathId));
