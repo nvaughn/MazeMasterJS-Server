@@ -11,6 +11,7 @@ const Enumerations_1 = require("./Enumerations");
 const util_1 = require("util");
 const log = Logger_1.default.getInstance();
 const MAX_CELL_COUNT = 2500; // control max maze size to prevent overflow due to recursion errors
+const MIN_TRAPS_CHALLENGE_LEVEL = 3; // the minimum maze challenge level that allows traps
 let recurseDepth = 0; // tracks the level of recursion during path carving
 let maxRecurseDepth = 0; // tracks the deepest level of carve recursion seen
 let startGenTime = 0; // used to determine time spent generating a maze
@@ -148,15 +149,25 @@ class Maze {
         // now solve the maze and tag the path
         this.solveAndTag();
         // then add some traps...
-        this.addTraps();
+        if (this.challenge >= MIN_TRAPS_CHALLENGE_LEVEL) {
+            this.addTraps();
+        }
+        else {
+            log.debug(__filename, 'generate()', util_1.format('Maze Challenge Level (%s) is below the minimum CL allowing traps (%s). Skipping trap generation.', this.challenge, MIN_TRAPS_CHALLENGE_LEVEL));
+        }
         // render the maze so the text rendering is set
         this.render();
         log.info(__filename, 'generate()', util_1.format('Generation Complete: Time=%dms, Recursion=%d, MazeID=%s', Date.now() - startGenTime, maxRecurseDepth, this._id));
         return this;
     }
+    /**
+     * Carves passages out of a new maze grid that has no exits set
+     * Only trace logging in here due to recursive log spam
+     * @param cell
+     */
     carvePassage(cell) {
         recurseDepth++;
-        log.debug(__filename, 'carvePassage()', util_1.format('Recursion: %d. Carving STARTED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
+        log.trace(__filename, 'carvePassage()', util_1.format('Recursion: %d. Carving STARTED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
         // randomly sort an array of bitwise directional values (see also: Enums.Dirs)
         let dirs = [1, 2, 4, 8].sort(function (a, b) {
             return 0.5 - Math.random();
@@ -288,7 +299,8 @@ class Maze {
         this.tagSolution(playerPos, 0);
     }
     /**
-     *
+     * Finds the best solution path and tags it with TAGS.PATH
+     * Only trace logging in here because it's recursive and very noisy
      * @param cellPos
      * @param pathId
      */
@@ -311,7 +323,7 @@ class Maze {
         let dirs = [Enumerations_1.DIRS.NORTH, Enumerations_1.DIRS.SOUTH, Enumerations_1.DIRS.EAST, Enumerations_1.DIRS.WEST];
         let moveMade = false;
         if (playerPos.equals(this.finishCell)) {
-            log.debug(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- WINNING PATH!', recurseDepth, pathId));
+            log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- WINNING PATH!', recurseDepth, pathId));
         }
         else {
             // update player location, but don't move it once it finds the finish
@@ -344,10 +356,10 @@ class Maze {
                     // update the path ID if moving into a new branch
                     if (moveMade) {
                         pathId++;
-                        log.debug(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Moving %s [NEW PATH] to cell %s.', recurseDepth, pathId, Enumerations_1.DIRS[dir], nLoc.toString()));
+                        log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Moving %s [NEW PATH] to cell %s.', recurseDepth, pathId, Enumerations_1.DIRS[dir], nLoc.toString()));
                     }
                     else {
-                        log.debug(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Moving %s [CONTINUING PATH] to cell %s.', recurseDepth, pathId, Enumerations_1.DIRS[dir], nLoc.toString()));
+                        log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Moving %s [CONTINUING PATH] to cell %s.', recurseDepth, pathId, Enumerations_1.DIRS[dir], nLoc.toString()));
                     }
                     if (!playerPos.equals(this.finishCell))
                         this.tagSolution(nLoc, pathId);
@@ -356,68 +368,62 @@ class Maze {
                 }
             });
             if (!moveMade) {
-                log.debug(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- DEAD_END: Cannot move from cell %s', recurseDepth, pathId, cell.getPos().toString()));
+                log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- DEAD_END: Cannot move from cell %s', recurseDepth, pathId, cell.getPos().toString()));
             }
         }
         if (playerPos.equals(this.finishCell)) {
-            log.debug(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Adding PATH tag to %s.', recurseDepth, pathId, cell.getPos().toString()));
+            log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Adding PATH tag to %s.', recurseDepth, pathId, cell.getPos().toString()));
             this.shortestPathLength++;
             cell.clearTags();
             cell.addTag(Enumerations_1.TAGS.PATH);
         }
         recurseDepth--;
-        log.debug(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Path complete.', recurseDepth, pathId));
+        log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Path complete.', recurseDepth, pathId));
     } // end tagSolution()
     addTraps() {
-        log.debug(__filename, 'generate()', util_1.format('Randomly adding traps for challenge level %s maze.', this.challenge));
+        log.debug(__filename, 'addTraps()', util_1.format('Randomly adding traps for challenge level %s maze.', this.challenge));
         let trapCount = 0;
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 let cell = this._cells[y][x];
-                // add traps?  Have to be sure that the trap can be jumped over
-                if (this.challenge >= 3) {
-                    // traps only allowed if there are open cells on either side to allow jumping
-                    // traps on the solution path will be removed when solution is
-                    let trapAllowed = !!(cell.getExits() & Enumerations_1.DIRS.NORTH) && !!(cell.getExits() & Enumerations_1.DIRS.SOUTH); // north-south safe
-                    if (!trapAllowed)
-                        trapAllowed = !!(cell.getExits() & Enumerations_1.DIRS.NORTH) && !!(cell.getExits() & Enumerations_1.DIRS.SOUTH); // not north-south save, but east-west safe?
-                    if (trapAllowed)
-                        trapAllowed = !(cell.getTags() & Enumerations_1.TAGS.PATH); // cancel both if trap is on solution path
-                    if (trapAllowed) {
-                        let trapTries = Math.floor(this.challenge / 4);
-                        log.debug(__filename, 'generate()', util_1.format('trapTries=', trapTries));
-                        for (let trapCheck = 1; trapCheck <= Math.floor(this.challenge / 3); trapCheck++) {
-                            let trapNum = Math.floor(Math.random() * 13) - this.challenge + 1;
-                            log.debug(__filename, 'generate()', util_1.format('trapNum=%s', trapNum));
-                            switch (trapNum) {
-                                case 1: {
-                                    cell.addTag(Enumerations_1.TAGS.TRAP_PIT);
-                                    trapCount++;
-                                    break;
-                                }
-                                case 2: {
-                                    cell.addTag(Enumerations_1.TAGS.TRAP_FLAMETHOWER);
-                                    trapCount++;
-                                    break;
-                                }
-                                default: {
-                                    log.debug(__filename, 'generate()', util_1.format('No hit on trap num %s', trapNum));
-                                }
-                            }
-                            if (trapNum > 0 && trapNum < 4)
+                // traps only allowed if there are open cells on either side to allow jumping
+                // traps on the solution path will be removed when solution is
+                let trapAllowed = !!(cell.getExits() & Enumerations_1.DIRS.NORTH) && !!(cell.getExits() & Enumerations_1.DIRS.SOUTH); // north-south safe
+                if (!trapAllowed)
+                    trapAllowed = !!(cell.getExits() & Enumerations_1.DIRS.NORTH) && !!(cell.getExits() & Enumerations_1.DIRS.SOUTH); // not north-south save, but east-west safe?
+                if (trapAllowed)
+                    trapAllowed = !(cell.getTags() & Enumerations_1.TAGS.PATH); // cancel both if trap is on solution path
+                if (trapAllowed) {
+                    let trapTries = Math.floor(this.challenge / 4);
+                    log.debug(__filename, 'addTraps()', util_1.format('trapTries=', trapTries));
+                    for (let trapCheck = 1; trapCheck <= Math.floor(this.challenge / 3); trapCheck++) {
+                        let trapNum = Math.floor(Math.random() * 13) - this.challenge + 1;
+                        log.debug(__filename, 'addTraps()', util_1.format('trapNum=%s', trapNum));
+                        switch (trapNum) {
+                            case 1: {
+                                cell.addTag(Enumerations_1.TAGS.TRAP_PIT);
+                                trapCount++;
                                 break;
+                            }
+                            case 2: {
+                                cell.addTag(Enumerations_1.TAGS.TRAP_FLAMETHOWER);
+                                trapCount++;
+                                break;
+                            }
+                            default: {
+                                log.trace(__filename, 'addTraps()', util_1.format('No hit on trap num %s', trapNum));
+                            }
                         }
-                    }
-                    else {
-                        log.debug(__filename, 'generate()', util_1.format('No room for traps.'));
+                        if (trapNum > 0 && trapNum < 4)
+                            break;
                     }
                 }
                 else {
-                    log.debug(__filename, 'generate()', util_1.format('Challenge %s too low for traps.', this.challenge));
+                    log.trace(__filename, 'addTraps()', util_1.format('No room for traps.'));
                 }
             }
         }
-        log.debug(__filename, 'generate()', util_1.format('Total trap count=%s', trapCount));
+        log.debug(__filename, 'addTraps()', util_1.format('Total trap count=%s', trapCount));
     }
     get height() {
         return this._height;
@@ -443,9 +449,6 @@ class Maze {
     }
     set challenge(value) {
         this._challenge = value;
-    }
-    get() {
-        return this._cells;
     }
     get cells() {
         return this._cells;

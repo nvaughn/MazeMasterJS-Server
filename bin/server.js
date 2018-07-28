@@ -1,24 +1,24 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const db = __importStar(require("./lib/LocalDB"));
 const Logger_1 = require("./lib/Logger");
+const LocalDAO_1 = require("./lib/LocalDAO");
+const Maze_1 = require("./lib/Maze");
 Logger_1.Logger;
 // set up logger
 const log = Logger_1.Logger.getInstance();
 log.setLogLevel(Logger_1.LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
-db.insertScore({ team: 'hello', score: '123' });
+// get data access object instance
+// currently using a local NeDB JSON DB
+const dao = LocalDAO_1.LocalDAO.getInstance();
 // start up the server
 startServer();
 function startServer() {
     log.info(__filename, 'startServer()', 'Server started.');
+    let maze = new Maze_1.Maze();
+    maze.generate(11, 15, 'DragonDingle', 4);
+    console.log(maze.textRender);
+    dao.insertMaze(maze);
 }
 /**
  * Watch for SIGINT (process interrupt signal) and trigger shutdown

@@ -1,5 +1,6 @@
-import * as db from './lib/LocalDB';
 import { Logger, LOG_LEVELS } from './lib/Logger';
+import { LocalDAO } from './lib/LocalDAO';
+import { Maze } from './lib/Maze';
 
 Logger;
 // set up logger
@@ -7,13 +8,21 @@ const log = Logger.getInstance();
 log.setLogLevel(LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
 
-db.insertScore({ team: 'hello', score: '123' });
+// get data access object instance
+// currently using a local NeDB JSON DB
+const dao = LocalDAO.getInstance();
 
 // start up the server
 startServer();
 
 function startServer() {
     log.info(__filename, 'startServer()', 'Server started.');
+
+    let maze = new Maze();
+    maze.generate(11, 15, 'DragonDingle', 4);
+    console.log(maze.textRender);
+
+    dao.insertMaze(maze);
 }
 
 /**

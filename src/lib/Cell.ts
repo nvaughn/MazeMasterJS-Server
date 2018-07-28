@@ -137,6 +137,8 @@ export default class Cell {
     /**
      * Adds or Removes cell exits, depending on SET_EXIT_MODES value.
      * Also adds or removes opposite exit from valid, adjoining cell.
+     * Only trace logging - this is called frequently by recursive generation
+     * routines.
      *
      * @param dir
      * @param cells
@@ -147,7 +149,7 @@ export default class Cell {
         let dirName = DIRS[dir];
         let validMove = true; // only set to true if valid adjoining cell exits to open an exit to
 
-        log.debug(__filename, format('setExit(%s, %s)', modeName, dirName), format('Setting exits in cell [%d][%d]. Existing exits: %s.', this.y, this.x, this.listExits()));
+        log.trace(__filename, format('setExit(%s, %s)', modeName, dirName), format('Setting exits in cell [%d][%d]. Existing exits: %s.', this.y, this.x, this.listExits()));
 
         if (mode == FN_MODES.ADD ? !(this.exits & dir) : !!(this.exits & dir)) {
             let nLoc = { y: -1, x: -1 }; // location adjoining cell - must open exit on both sides
@@ -175,10 +177,10 @@ export default class Cell {
                 let neighbor: Cell = cells[nLoc.y][nLoc.x];
 
                 this.exits = mode == FN_MODES.ADD ? (this.exits += dir) : (this.exits -= dir);
-                log.debug(__filename, format('setExit(%s, %s)', modeName, dirName), format('Exits set in cell [%d][%d]. Exits: ', this.y, this.x, this.listExits()));
+                log.trace(__filename, format('setExit(%s, %s)', modeName, dirName), format('Exits set in cell [%d][%d]. Exits: ', this.y, this.x, this.listExits()));
 
                 neighbor.exits = mode == FN_MODES.ADD ? (neighbor.exits += this.reverseDir(dir)) : (neighbor.exits -= dir);
-                log.debug(__filename, format('setExit(%s, %s)', modeName, dirName), format('Adjoining exits set in cell [%d][%d]. Exits: ', neighbor.y, neighbor.x, neighbor.listExits()));
+                log.trace(__filename, format('setExit(%s, %s)', modeName, dirName), format('Adjoining exits set in cell [%d][%d]. Exits: ', neighbor.y, neighbor.x, neighbor.listExits()));
             } else {
                 log.warn(__filename, format('setExit(%s, %s)', modeName, dirName), format('Invalid adjoining cell location: [%d][%d]', nLoc.y, nLoc.x));
             }
@@ -259,7 +261,7 @@ export default class Cell {
                     }
                     break;
             }
-            log.debug(__filename, 'addTag(' + tagName + ')', format('Tag %s added to cell [%d][%d]. Current tags: %s.', tagName, this.y, this.x, this.listTags()));
+            log.trace(__filename, 'addTag(' + tagName + ')', format('Tag %s added to cell [%d][%d]. Current tags: %s.', tagName, this.y, this.x, this.listTags()));
         } else {
             log.warn(__filename, 'addTag(' + tagName + ')', format('Tag %s already exists in cell [%d][%d]. Current tags: %s.', tagName, this.y, this.x, this.listTags()));
         }

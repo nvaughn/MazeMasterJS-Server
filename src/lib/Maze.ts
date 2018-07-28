@@ -9,6 +9,7 @@ import { format as fmt } from 'util';
 
 const log = Logger.getInstance();
 const MAX_CELL_COUNT = 2500; // control max maze size to prevent overflow due to recursion errors
+const MIN_TRAPS_CHALLENGE_LEVEL = 3; // the minimum maze challenge level that allows traps
 
 let recurseDepth = 0; // tracks the level of recursion during path carving
 let maxRecurseDepth = 0; // tracks the deepest level of carve recursion seen
@@ -182,7 +183,11 @@ export class Maze implements IMaze {
         this.solveAndTag();
 
         // then add some traps...
-        this.addTraps();
+        if (this.challenge >= MIN_TRAPS_CHALLENGE_LEVEL) {
+            this.addTraps();
+        } else {
+            log.debug(__filename, 'generate()', fmt('Maze Challenge Level (%s) is below the minimum CL allowing traps (%s). Skipping trap generation.', this.challenge, MIN_TRAPS_CHALLENGE_LEVEL));
+        }
 
         // render the maze so the text rendering is set
         this.render();
@@ -191,9 +196,14 @@ export class Maze implements IMaze {
         return this;
     }
 
+    /**
+     * Carves passages out of a new maze grid that has no exits set
+     * Only trace logging in here due to recursive log spam
+     * @param cell
+     */
     private carvePassage(cell: Cell) {
         recurseDepth++;
-        log.debug(__filename, 'carvePassage()', fmt('Recursion: %d. Carving STARTED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
+        log.trace(__filename, 'carvePassage()', fmt('Recursion: %d. Carving STARTED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
 
         // randomly sort an array of bitwise directional values (see also: Enums.Dirs)
         let dirs = [1, 2, 4, 8].sort(function(a, b) {
@@ -336,7 +346,8 @@ export class Maze implements IMaze {
     }
 
     /**
-     *
+     * Finds the best solution path and tags it with TAGS.PATH
+     * Only trace logging in here because it's recursive and very noisy
      * @param cellPos
      * @param pathId
      */
@@ -363,7 +374,7 @@ export class Maze implements IMaze {
         let moveMade = false;
 
         if (playerPos.equals(this.finishCell)) {
-            log.debug(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- WINNING PATH!', recurseDepth, pathId));
+            log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- WINNING PATH!', recurseDepth, pathId));
         } else {
             // update player location, but don't move it once it finds the finish
             playerPos.col = cell.getPos().col;
@@ -394,9 +405,9 @@ export class Maze implements IMaze {
                     // update the path ID if moving into a new branch
                     if (moveMade) {
                         pathId++;
-                        log.debug(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Moving %s [NEW PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString()));
+                        log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Moving %s [NEW PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString()));
                     } else {
-                        log.debug(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Moving %s [CONTINUING PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString()));
+                        log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Moving %s [CONTINUING PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString()));
                     }
 
                     if (!playerPos.equals(this.finishCell)) this.tagSolution(nLoc, pathId);
@@ -407,71 +418,66 @@ export class Maze implements IMaze {
             });
 
             if (!moveMade) {
-                log.debug(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- DEAD_END: Cannot move from cell %s', recurseDepth, pathId, cell.getPos().toString()));
+                log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- DEAD_END: Cannot move from cell %s', recurseDepth, pathId, cell.getPos().toString()));
             }
         }
 
         if (playerPos.equals(this.finishCell)) {
-            log.debug(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Adding PATH tag to %s.', recurseDepth, pathId, cell.getPos().toString()));
+            log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Adding PATH tag to %s.', recurseDepth, pathId, cell.getPos().toString()));
             this.shortestPathLength++;
             cell.clearTags();
             cell.addTag(TAGS.PATH);
         }
 
         recurseDepth--;
-        log.debug(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Path complete.', recurseDepth, pathId));
+        log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Path complete.', recurseDepth, pathId));
     } // end tagSolution()
 
     private addTraps() {
-        log.debug(__filename, 'generate()', fmt('Randomly adding traps for challenge level %s maze.', this.challenge));
+        log.debug(__filename, 'addTraps()', fmt('Randomly adding traps for challenge level %s maze.', this.challenge));
 
         let trapCount = 0;
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 let cell = this._cells[y][x];
 
-                // add traps?  Have to be sure that the trap can be jumped over
-                if (this.challenge >= 3) {
-                    // traps only allowed if there are open cells on either side to allow jumping
-                    // traps on the solution path will be removed when solution is
+                // traps only allowed if there are open cells on either side to allow jumping
+                // traps on the solution path will be removed when solution is
 
-                    let trapAllowed = !!(cell.getExits() & DIRS.NORTH) && !!(cell.getExits() & DIRS.SOUTH); // north-south safe
-                    if (!trapAllowed) trapAllowed = !!(cell.getExits() & DIRS.NORTH) && !!(cell.getExits() & DIRS.SOUTH); // not north-south save, but east-west safe?
-                    if (trapAllowed) trapAllowed = !(cell.getTags() & TAGS.PATH); // cancel both if trap is on solution path
+                let trapAllowed = !!(cell.getExits() & DIRS.NORTH) && !!(cell.getExits() & DIRS.SOUTH); // north-south safe
+                if (!trapAllowed) trapAllowed = !!(cell.getExits() & DIRS.NORTH) && !!(cell.getExits() & DIRS.SOUTH); // not north-south save, but east-west safe?
+                if (trapAllowed) trapAllowed = !(cell.getTags() & TAGS.PATH); // cancel both if trap is on solution path
 
-                    if (trapAllowed) {
-                        let trapTries = Math.floor(this.challenge / 4);
-                        log.debug(__filename, 'generate()', fmt('trapTries=', trapTries));
+                if (trapAllowed) {
+                    let trapTries = Math.floor(this.challenge / 4);
+                    log.debug(__filename, 'addTraps()', fmt('trapTries=', trapTries));
 
-                        for (let trapCheck = 1; trapCheck <= Math.floor(this.challenge / 3); trapCheck++) {
-                            let trapNum = Math.floor(Math.random() * 13) - this.challenge + 1;
-                            log.debug(__filename, 'generate()', fmt('trapNum=%s', trapNum));
-                            switch (trapNum) {
-                                case 1: {
-                                    cell.addTag(TAGS.TRAP_PIT);
-                                    trapCount++;
-                                    break;
-                                }
-                                case 2: {
-                                    cell.addTag(TAGS.TRAP_FLAMETHOWER);
-                                    trapCount++;
-                                    break;
-                                }
-                                default: {
-                                    log.debug(__filename, 'generate()', fmt('No hit on trap num %s', trapNum));
-                                }
+                    for (let trapCheck = 1; trapCheck <= Math.floor(this.challenge / 3); trapCheck++) {
+                        let trapNum = Math.floor(Math.random() * 13) - this.challenge + 1;
+                        log.debug(__filename, 'addTraps()', fmt('trapNum=%s', trapNum));
+                        switch (trapNum) {
+                            case 1: {
+                                cell.addTag(TAGS.TRAP_PIT);
+                                trapCount++;
+                                break;
                             }
-                            if (trapNum > 0 && trapNum < 4) break;
+                            case 2: {
+                                cell.addTag(TAGS.TRAP_FLAMETHOWER);
+                                trapCount++;
+                                break;
+                            }
+                            default: {
+                                log.trace(__filename, 'addTraps()', fmt('No hit on trap num %s', trapNum));
+                            }
                         }
-                    } else {
-                        log.debug(__filename, 'generate()', fmt('No room for traps.'));
+                        if (trapNum > 0 && trapNum < 4) break;
                     }
                 } else {
-                    log.debug(__filename, 'generate()', fmt('Challenge %s too low for traps.', this.challenge));
+                    log.trace(__filename, 'addTraps()', fmt('No room for traps.'));
                 }
             }
         }
-        log.debug(__filename, 'generate()', fmt('Total trap count=%s', trapCount));
+        log.debug(__filename, 'addTraps()', fmt('Total trap count=%s', trapCount));
     }
 
     public get height(): number {
@@ -498,9 +504,6 @@ export class Maze implements IMaze {
     }
     public set challenge(value: number) {
         this._challenge = value;
-    }
-    public get() {
-        return this._cells;
     }
     public get cells(): Array<Array<Cell>> {
         return this._cells;
