@@ -1,11 +1,13 @@
-import fs from 'fs';
-import path from 'path';
-import { format as fmt } from 'util';
-import { Logger, LOG_LEVELS } from '../lib/Logger';
+import * as db from './lib/LocalDB';
+import { Logger, LOG_LEVELS } from './lib/Logger';
 
+Logger;
+// set up logger
 const log = Logger.getInstance();
 log.setLogLevel(LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
+
+db.insertScore({ team: 'hello', score: '123' });
 
 // start up the server
 startServer();

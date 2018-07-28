@@ -1,9 +1,20 @@
 "use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const Logger_1 = require("./Logger");
+const db = __importStar(require("./lib/LocalDB"));
+const Logger_1 = require("./lib/Logger");
+Logger_1.Logger;
+// set up logger
 const log = Logger_1.Logger.getInstance();
 log.setLogLevel(Logger_1.LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
+db.insertScore({ team: 'hello', score: '123' });
 // start up the server
 startServer();
 function startServer() {
