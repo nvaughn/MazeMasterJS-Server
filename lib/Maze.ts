@@ -90,7 +90,7 @@ export class Maze implements IMaze {
         return this.getCell(pos).toICell();
     }
 
-    public getCellNeighbor(cell: Cell, dir: DIRS): ICell {
+    public getCellNeighbor(cell: Cell, dir: DIRS): Cell {
         // move location of next cell according to random direction
         let row = cell.getPos().row;
         let col = cell.getPos().col;
@@ -99,7 +99,7 @@ export class Maze implements IMaze {
         if (dir < DIRS.EAST) row = dir == DIRS.NORTH ? row - 1 : row + 1;
         if (dir > DIRS.SOUTH) col = dir == DIRS.EAST ? col + 1 : col - 1;
 
-        return this.getCell(new Position(row, col)).toICell();
+        return this.getCell(new Position(row, col));
     }
 
     /**
