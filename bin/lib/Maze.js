@@ -381,7 +381,7 @@ class Maze {
         log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Path complete.', recurseDepth, pathId));
     } // end tagSolution()
     addTraps() {
-        log.debug(__filename, 'addTraps()', util_1.format('Randomly adding traps for challenge level %s maze.', this.challenge));
+        log.debug(__filename, 'addTraps()', util_1.format('Generating traps for challenge level %s maze.', this.challenge));
         let trapCount = 0;
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
@@ -395,10 +395,10 @@ class Maze {
                     trapAllowed = !(cell.getTags() & Enumerations_1.TAGS.PATH); // cancel both if trap is on solution path
                 if (trapAllowed) {
                     let trapTries = Math.floor(this.challenge / 4);
-                    log.debug(__filename, 'addTraps()', util_1.format('trapTries=', trapTries));
+                    log.trace(__filename, 'addTraps()', util_1.format('trapTries=', trapTries));
                     for (let trapCheck = 1; trapCheck <= Math.floor(this.challenge / 3); trapCheck++) {
                         let trapNum = Math.floor(Math.random() * 13) - this.challenge + 1;
-                        log.debug(__filename, 'addTraps()', util_1.format('trapNum=%s', trapNum));
+                        log.trace(__filename, 'addTraps()', util_1.format('trapNum=%s', trapNum));
                         switch (trapNum) {
                             case 1: {
                                 cell.addTag(Enumerations_1.TAGS.TRAP_PIT);
@@ -423,7 +423,7 @@ class Maze {
                 }
             }
         }
-        log.debug(__filename, 'addTraps()', util_1.format('Total trap count=%s', trapCount));
+        log.debug(__filename, 'addTraps()', util_1.format('Trap generation complete. Total trap count=%s', trapCount));
     }
     get height() {
         return this._height;

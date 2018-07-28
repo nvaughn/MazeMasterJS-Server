@@ -434,7 +434,7 @@ export class Maze implements IMaze {
     } // end tagSolution()
 
     private addTraps() {
-        log.debug(__filename, 'addTraps()', fmt('Randomly adding traps for challenge level %s maze.', this.challenge));
+        log.debug(__filename, 'addTraps()', fmt('Generating traps for challenge level %s maze.', this.challenge));
 
         let trapCount = 0;
         for (let y = 0; y < this.height; y++) {
@@ -450,11 +450,11 @@ export class Maze implements IMaze {
 
                 if (trapAllowed) {
                     let trapTries = Math.floor(this.challenge / 4);
-                    log.debug(__filename, 'addTraps()', fmt('trapTries=', trapTries));
+                    log.trace(__filename, 'addTraps()', fmt('trapTries=', trapTries));
 
                     for (let trapCheck = 1; trapCheck <= Math.floor(this.challenge / 3); trapCheck++) {
                         let trapNum = Math.floor(Math.random() * 13) - this.challenge + 1;
-                        log.debug(__filename, 'addTraps()', fmt('trapNum=%s', trapNum));
+                        log.trace(__filename, 'addTraps()', fmt('trapNum=%s', trapNum));
                         switch (trapNum) {
                             case 1: {
                                 cell.addTag(TAGS.TRAP_PIT);
@@ -477,7 +477,7 @@ export class Maze implements IMaze {
                 }
             }
         }
-        log.debug(__filename, 'addTraps()', fmt('Total trap count=%s', trapCount));
+        log.debug(__filename, 'addTraps()', fmt('Trap generation complete. Total trap count=%s', trapCount));
     }
 
     public get height(): number {
