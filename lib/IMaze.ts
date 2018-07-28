@@ -4,7 +4,6 @@ import Position from './Position';
  *  Maze interface
  */
 export interface IMaze {
-    //    cells: Array<Array<Cell>>;
     height: number;
     width: number;
     seed: string;
