@@ -19,13 +19,13 @@ let solutionPath: Array<string>; // used for the maze solver
 let playerPos: Position; // used for the maze solver
 
 export class Maze implements IMaze {
+    private _id: string;
     private _height: number;
     private _width: number;
     private _seed: string;
     private _challenge: number;
     private _cells: Array<Array<Cell>>;
     private _textRender: string;
-    private _id: string;
     private _startCell: Position;
     private _finishCell: Position;
     private _shortestPathLength: number;
@@ -142,7 +142,7 @@ export class Maze implements IMaze {
         }
 
         // set maze's ID
-        this.id = fmt('%d:%d:%s', this.height, this.width, this.seed);
+        this.id = fmt('%d:%d:%d:%s', this.height, this.width, this.challenge, this.seed);
 
         // build the empty cells array
         this._cells = new Array(height);

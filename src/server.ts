@@ -1,3 +1,4 @@
+import { format as fmt } from 'util';
 import { Logger, LOG_LEVELS } from './lib/Logger';
 import { LocalDAO } from './lib/LocalDAO';
 import { Maze } from './lib/Maze';
@@ -19,10 +20,15 @@ function startServer() {
     log.info(__filename, 'startServer()', 'Server started.');
 
     let maze = new Maze();
-    maze.generate(11, 15, 'DragonDingle', 4);
+    maze.generate(10, 10, 'NewbishMaze', 3);
     console.log(maze.textRender);
 
-    dao.insertMaze(maze);
+    dao.insertMaze(maze, function cbInsertMaze(err: Error, newDoc: any) {
+        if (!err || err === undefined) {
+            log.debug(__filename, 'startServer()', fmt('Maze [%s] stored successfully.', newDoc._id));
+            // add to mazes array or something?
+        }
+    });
 }
 
 /**

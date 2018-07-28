@@ -119,7 +119,7 @@ class Maze {
             seedrandom_1.default(seed, { global: true });
         }
         // set maze's ID
-        this.id = util_1.format('%d:%d:%s', this.height, this.width, this.seed);
+        this.id = util_1.format('%d:%d:%d:%s', this.height, this.width, this.challenge, this.seed);
         // build the empty cells array
         this._cells = new Array(height);
         for (let y = 0; y < height; y++) {

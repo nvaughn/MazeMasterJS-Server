@@ -47,25 +47,36 @@ class LocalDAO {
     /**                     **/
     /**  MAZE DB FUNCTIONS  **/
     /**                     **/
-    insertMaze(maze) {
+    /**
+     * Attempts to insert maze into database. Optional callback provided.
+     */
+    insertMaze(maze, callback) {
         this.dbMazes.insert(maze, function (err, newDoc) {
             if (err && err !== undefined) {
-                log.error(__filename, 'insertMaze()', util_1.format('Error inserting maze [%s] in %s', maze.seed, mazesDbFile), err);
-                LocalDAO.getInstance().updateMaze(maze);
+                log.error(__filename, 'insertMaze()', util_1.format('Error inserting maze [%s] in %s', maze.id, mazesDbFile), err);
             }
             else {
-                log.debug(__filename, 'insertMaze()', util_1.format('Maze [%s] inserted into %s', newDoc.seed, mazesDbFile));
+                log.debug(__filename, 'insertMaze()', util_1.format('Maze [%s] inserted into %s', maze.id, mazesDbFile));
             }
+            if (callback !== undefined)
+                callback(err, newDoc);
         });
     }
-    updateMaze(maze) {
+    updateMaze(maze, callback) {
         this.dbMazes.update({ _id: maze.id }, maze, {}, function (err, numReplaced) {
             if (err && err !== undefined) {
-                log.error(__filename, 'updateMaze()', util_1.format('Error updating maze [%s] in %s', maze.seed, mazesDbFile), err);
+                log.error(__filename, 'updateMaze()', util_1.format('Error updating maze [%s] in %s', maze.id, mazesDbFile), err);
             }
             else {
-                log.debug(__filename, 'updateMaze()', util_1.format('%s maze record (%s) updated in %s', numReplaced, maze.seed, mazesDbFile));
+                if (numReplaced == 0) {
+                    log.error(__filename, 'updateMaze()', util_1.format('Error updating maze [%s] in %s', maze.id, mazesDbFile), new Error('Maze Not Found: ' + maze.id));
+                }
+                else {
+                    log.debug(__filename, 'updateMaze()', util_1.format('%s maze record [%s] updated in %s', numReplaced, maze.id, mazesDbFile));
+                }
             }
+            if (callback !== undefined)
+                callback(err, numReplaced);
         });
     }
     /**                     **/

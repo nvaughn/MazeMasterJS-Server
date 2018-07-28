@@ -55,24 +55,35 @@ export class LocalDAO {
     /**                     **/
     /**  MAZE DB FUNCTIONS  **/
     /**                     **/
-    public insertMaze(maze: Maze) {
+
+    /**
+     * Attempts to insert maze into database. Optional callback provided.
+     */
+    public insertMaze(maze: Maze, callback?: Function) {
         this.dbMazes.insert(maze, function(err, newDoc) {
             if (err && err !== undefined) {
-                log.error(__filename, 'insertMaze()', fmt('Error inserting maze [%s] in %s', maze.seed, mazesDbFile), err);
-                LocalDAO.getInstance().updateMaze(maze);
+                log.error(__filename, 'insertMaze()', fmt('Error inserting maze [%s] in %s', maze.id, mazesDbFile), err);
             } else {
-                log.debug(__filename, 'insertMaze()', fmt('Maze [%s] inserted into %s', newDoc.seed, mazesDbFile));
+                log.debug(__filename, 'insertMaze()', fmt('Maze [%s] inserted into %s', maze.id, mazesDbFile));
             }
+
+            if (callback !== undefined) callback(err, newDoc);
         });
     }
 
-    public updateMaze(maze: Maze) {
+    public updateMaze(maze: Maze, callback?: Function) {
         this.dbMazes.update({ _id: maze.id }, maze, {}, function(err, numReplaced) {
             if (err && err !== undefined) {
-                log.error(__filename, 'updateMaze()', fmt('Error updating maze [%s] in %s', maze.seed, mazesDbFile), err);
+                log.error(__filename, 'updateMaze()', fmt('Error updating maze [%s] in %s', maze.id, mazesDbFile), err);
             } else {
-                log.debug(__filename, 'updateMaze()', fmt('%s maze record (%s) updated in %s', numReplaced, maze.seed, mazesDbFile));
+                if (numReplaced == 0) {
+                    log.error(__filename, 'updateMaze()', fmt('Error updating maze [%s] in %s', maze.id, mazesDbFile), new Error('Maze Not Found: ' + maze.id));
+                } else {
+                    log.debug(__filename, 'updateMaze()', fmt('%s maze record [%s] updated in %s', numReplaced, maze.id, mazesDbFile));
+                }
             }
+
+            if (callback !== undefined) callback(err, numReplaced);
         });
     }
 
