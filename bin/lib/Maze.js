@@ -11,6 +11,7 @@ const Enumerations_1 = require("./Enumerations");
 const util_1 = require("util");
 const log = Logger_1.default.getInstance();
 const MAX_CELL_COUNT = 2500; // control max maze size to prevent overflow due to recursion errors
+const MIN_MAZE_DIMENSION_SIZE = 3; // The smallest allowed maze height & width
 const MIN_TRAPS_CHALLENGE_LEVEL = 3; // the minimum maze challenge level that allows traps
 let recurseDepth = 0; // tracks the level of recursion during path carving
 let maxRecurseDepth = 0; // tracks the deepest level of carve recursion seen
@@ -24,16 +25,17 @@ class Maze {
      */
     constructor(data) {
         if (data !== undefined) {
-            this._height = data.height;
-            this._width = data.width;
-            this._seed = data.seed;
-            this._challenge = data.challenge;
-            this._textRender = data.textRender;
-            this._id = data.id;
-            this._startCell = data.startCell;
-            this._finishCell = data.finishCell;
-            this._shortestPathLength = data.shortestPathLength;
-            this._cells = this.buildCellsArray(data.cells);
+            this._height = data._height;
+            this._width = data._width;
+            this._seed = data._seed;
+            this._challenge = data._challenge;
+            this._textRender = data._textRender;
+            this._id = data._id;
+            this._startCell = data._startCell;
+            this._finishCell = data._finishCell;
+            this._shortestPathLength = data._shortestPathLength;
+            this._note = data._note;
+            this._cells = this.buildCellsArray(data._cells);
         }
         else {
             this._height = 0;
@@ -45,6 +47,7 @@ class Maze {
             this._startCell = new Position_1.Position(0, 0);
             this._finishCell = new Position_1.Position(0, 0);
             this._shortestPathLength = 0;
+            this._note = '';
             this._cells = new Array();
         }
     }
@@ -109,6 +112,9 @@ class Maze {
         // set the dimensions
         this.height = height;
         this.width = width;
+        if (this.height < MIN_MAZE_DIMENSION_SIZE || this.width < MIN_MAZE_DIMENSION_SIZE) {
+            throw new Error(util_1.format('MINIMUM MAZE DIMENSIONS (%dx%d) NOT MET! Please increase Height and/or Width and try again.', MIN_MAZE_DIMENSION_SIZE, MIN_MAZE_DIMENSION_SIZE));
+        }
         // check for size constraint
         if (height * width > MAX_CELL_COUNT) {
             throw new Error(util_1.format('MAX CELL COUNT (%d) EXCEEDED!  %d*%d=%d - Please reduce Height and/or Width and try again.', MAX_CELL_COUNT, height, width, height * width));
@@ -430,7 +436,6 @@ class Maze {
         this._height = value;
     }
     get width() {
-        1;
         return this._width;
     }
     set width(value) {
@@ -480,6 +485,12 @@ class Maze {
     }
     set shortestPathLength(value) {
         this._shortestPathLength = value;
+    }
+    get note() {
+        return this._note;
+    }
+    set note(value) {
+        this._note = value;
     }
 }
 exports.Maze = Maze;

@@ -1,6 +1,5 @@
 import Cell from './Cell';
 import ICell from './ICell';
-import IMaze from './IMaze';
 import seedrandom from 'seedrandom';
 import Logger from './Logger';
 import { Position } from './Position';
@@ -9,6 +8,7 @@ import { format as fmt } from 'util';
 
 const log = Logger.getInstance();
 const MAX_CELL_COUNT = 2500; // control max maze size to prevent overflow due to recursion errors
+const MIN_MAZE_DIMENSION_SIZE = 3; // The smallest allowed maze height & width
 const MIN_TRAPS_CHALLENGE_LEVEL = 3; // the minimum maze challenge level that allows traps
 
 let recurseDepth = 0; // tracks the level of recursion during path carving
@@ -18,7 +18,7 @@ let startGenTime = 0; // used to determine time spent generating a maze
 let solutionPath: Array<string>; // used for the maze solver
 let playerPos: Position; // used for the maze solver
 
-export class Maze implements IMaze {
+export class Maze {
     private _id: string;
     private _height: number;
     private _width: number;
@@ -29,23 +29,25 @@ export class Maze implements IMaze {
     private _startCell: Position;
     private _finishCell: Position;
     private _shortestPathLength: number;
+    private _note: string;
 
     /**
      * Instantiates or new or pre-loaded Maze object
      * @param data - IMaze interface pre-filled with required data
      */
-    constructor(data?: IMaze) {
+    constructor(data?: Maze) {
         if (data !== undefined) {
-            this._height = data.height;
-            this._width = data.width;
-            this._seed = data.seed;
-            this._challenge = data.challenge;
-            this._textRender = data.textRender;
-            this._id = data.id;
-            this._startCell = data.startCell;
-            this._finishCell = data.finishCell;
-            this._shortestPathLength = data.shortestPathLength;
-            this._cells = this.buildCellsArray(data.cells);
+            this._height = data._height;
+            this._width = data._width;
+            this._seed = data._seed;
+            this._challenge = data._challenge;
+            this._textRender = data._textRender;
+            this._id = data._id;
+            this._startCell = data._startCell;
+            this._finishCell = data._finishCell;
+            this._shortestPathLength = data._shortestPathLength;
+            this._note = data._note;
+            this._cells = this.buildCellsArray(data._cells);
         } else {
             this._height = 0;
             this._width = 0;
@@ -56,6 +58,7 @@ export class Maze implements IMaze {
             this._startCell = new Position(0, 0);
             this._finishCell = new Position(0, 0);
             this._shortestPathLength = 0;
+            this._note = '';
             this._cells = new Array<Array<Cell>>();
         }
     }
@@ -130,9 +133,21 @@ export class Maze implements IMaze {
         this.height = height;
         this.width = width;
 
+        if (this.height < MIN_MAZE_DIMENSION_SIZE || this.width < MIN_MAZE_DIMENSION_SIZE) {
+            throw new Error(
+                fmt(
+                    'MINIMUM MAZE DIMENSIONS (%dx%d) NOT MET! Please increase Height and/or Width and try again.',
+                    MIN_MAZE_DIMENSION_SIZE,
+                    MIN_MAZE_DIMENSION_SIZE
+                )
+            );
+        }
+
         // check for size constraint
         if (height * width > MAX_CELL_COUNT) {
-            throw new Error(fmt('MAX CELL COUNT (%d) EXCEEDED!  %d*%d=%d - Please reduce Height and/or Width and try again.', MAX_CELL_COUNT, height, width, height * width));
+            throw new Error(
+                fmt('MAX CELL COUNT (%d) EXCEEDED!  %d*%d=%d - Please reduce Height and/or Width and try again.', MAX_CELL_COUNT, height, width, height * width)
+            );
         }
 
         // implement random seed
@@ -183,13 +198,25 @@ export class Maze implements IMaze {
         if (this.challenge >= MIN_TRAPS_CHALLENGE_LEVEL) {
             this.addTraps();
         } else {
-            log.debug(__filename, 'generate()', fmt('Maze Challenge Level (%s) is below the minimum CL allowing traps (%s). Skipping trap generation.', this.challenge, MIN_TRAPS_CHALLENGE_LEVEL));
+            log.debug(
+                __filename,
+                'generate()',
+                fmt(
+                    'Maze Challenge Level (%s) is below the minimum CL allowing traps (%s). Skipping trap generation.',
+                    this.challenge,
+                    MIN_TRAPS_CHALLENGE_LEVEL
+                )
+            );
         }
 
         // render the maze so the text rendering is set
         this.render();
 
-        log.info(__filename, 'generate()', fmt('Generation Complete: Time=%dms, Recursion=%d, MazeID=%s', Date.now() - startGenTime, maxRecurseDepth, this._id));
+        log.info(
+            __filename,
+            'generate()',
+            fmt('Generation Complete: Time=%dms, Recursion=%d, MazeID=%s', Date.now() - startGenTime, maxRecurseDepth, this._id)
+        );
         return this;
     }
 
@@ -239,7 +266,11 @@ export class Maze implements IMaze {
 
         // exiting the function relieves one level of recursion
         recurseDepth--;
-        log.trace(__filename, 'carvePassage()', fmt('Max Recursion: %d. Carve COMPLETED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
+        log.trace(
+            __filename,
+            'carvePassage()',
+            fmt('Max Recursion: %d. Carve COMPLETED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col)
+        );
     }
 
     /**
@@ -400,9 +431,17 @@ export class Maze implements IMaze {
                     // update the path ID if moving into a new branch
                     if (moveMade) {
                         pathId++;
-                        log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Moving %s [NEW PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString()));
+                        log.trace(
+                            __filename,
+                            fmt('tagSolution(%s)', cellPos.toString()),
+                            fmt('R:%d P:%s -- Moving %s [NEW PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString())
+                        );
                     } else {
-                        log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Moving %s [CONTINUING PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString()));
+                        log.trace(
+                            __filename,
+                            fmt('tagSolution(%s)', cellPos.toString()),
+                            fmt('R:%d P:%s -- Moving %s [CONTINUING PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString())
+                        );
                     }
 
                     if (!playerPos.equals(this.finishCell)) this.tagSolution(nLoc, pathId);
@@ -413,12 +452,20 @@ export class Maze implements IMaze {
             });
 
             if (!moveMade) {
-                log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- DEAD_END: Cannot move from cell %s', recurseDepth, pathId, cell.getPos().toString()));
+                log.trace(
+                    __filename,
+                    fmt('tagSolution(%s)', cellPos.toString()),
+                    fmt('R:%d P:%s -- DEAD_END: Cannot move from cell %s', recurseDepth, pathId, cell.getPos().toString())
+                );
             }
         }
 
         if (playerPos.equals(this.finishCell)) {
-            log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Adding PATH tag to %s.', recurseDepth, pathId, cell.getPos().toString()));
+            log.trace(
+                __filename,
+                fmt('tagSolution(%s)', cellPos.toString()),
+                fmt('R:%d P:%s -- Adding PATH tag to %s.', recurseDepth, pathId, cell.getPos().toString())
+            );
             this.shortestPathLength++;
             cell.clearTags();
             cell.addTag(TAGS.PATH);
@@ -482,7 +529,6 @@ export class Maze implements IMaze {
         this._height = value;
     }
     public get width(): number {
-        1;
         return this._width;
     }
     public set width(value: number) {
@@ -532,6 +578,12 @@ export class Maze implements IMaze {
     }
     public set shortestPathLength(value: number) {
         this._shortestPathLength = value;
+    }
+    public get note(): string {
+        return this._note;
+    }
+    public set note(value: string) {
+        this._note = value;
     }
 }
 

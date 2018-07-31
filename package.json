@@ -6,7 +6,7 @@
     "scripts": {
         "watch": "nodemon ./bin/server.js",
         "start": "node ./bin/server.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "mocha ./bin/test/test.js"
     },
     "repository": {
         "type": "git",
@@ -19,6 +19,8 @@
     },
     "homepage": "https://github.com/kreebog/MazeMasterJS-Server#readme",
     "devDependencies": {
+        "@types/mocha": "^5.2.5",
+        "mocha": "^5.2.0",
         "typescript": "^2.9.2"
     },
     "dependencies": {

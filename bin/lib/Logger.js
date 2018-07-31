@@ -52,7 +52,7 @@ class Logger {
     }
     error(file, method, message, error) {
         if (this.logLevel >= LOG_LEVELS.ERROR) {
-            console.log('%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s%s\r\n%s', COLORS.RED, getTimeStamp(), 'ERR', fileName(file), method, message, COLORS.NONE, error.stack);
+            console.log('%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s %s%s', COLORS.RED, getTimeStamp(), 'ERR', fileName(file), method, message, this.logLevel >= LOG_LEVELS.TRACE ? '\r\n' + error.stack : error.message, COLORS.NONE);
         }
     }
     warn(file, method, message) {

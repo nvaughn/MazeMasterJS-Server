@@ -1,6 +1,6 @@
 import { format as fmt } from 'util';
 import { Logger, LOG_LEVELS } from './lib/Logger';
-import { LocalDAO } from './lib/LocalDAO';
+import { LocalDAO, DATABASES } from './lib/DAO_Local';
 import { Maze } from './lib/Maze';
 
 Logger;
@@ -16,19 +16,22 @@ const dao = LocalDAO.getInstance();
 // start up the server
 startServer();
 
+testBlock();
+
+// TODO: Remove - for testing only
+function testBlock() {
+    let maze: Maze = new Maze();
+    maze.generate(3, 3, 'test', 5);
+    dao.insertDocument(DATABASES.MAZES, maze, function cbInsertTest(err: Error, newDoc: any) {
+        console.log('done');
+    });
+}
+
+/**
+ * Starts up the express server
+ */
 function startServer() {
     log.info(__filename, 'startServer()', 'Server started.');
-
-    let maze = new Maze();
-    maze.generate(10, 10, 'NewbishMaze', 3);
-    console.log(maze.textRender);
-
-    dao.insertMaze(maze, function cbInsertMaze(err: Error, newDoc: any) {
-        if (!err || err === undefined) {
-            log.debug(__filename, 'startServer()', fmt('Maze [%s] stored successfully.', newDoc._id));
-            // add to mazes array or something?
-        }
-    });
 }
 
 /**

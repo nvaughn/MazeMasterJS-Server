@@ -49,31 +49,77 @@ export class Logger {
 
     public debug(file: string, method: string, message: string) {
         if (this.logLevel >= LOG_LEVELS.DEBUG) {
-            console.log('%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s%s', COLORS.BLUE, getTimeStamp(), 'DBG', fileName(file), method, message, COLORS.NONE);
+            console.log(
+                '%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s%s',
+                COLORS.BLUE,
+                getTimeStamp(),
+                'DBG',
+                fileName(file),
+                method,
+                message,
+                COLORS.NONE
+            );
         }
     }
 
     public error(file: string, method: string, message: string, error: Error) {
         if (this.logLevel >= LOG_LEVELS.ERROR) {
-            console.log('%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s%s\r\n%s', COLORS.RED, getTimeStamp(), 'ERR', fileName(file), method, message, COLORS.NONE, error.stack);
+            console.log(
+                '%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s %s%s',
+                COLORS.RED,
+                getTimeStamp(),
+                'ERR',
+                fileName(file),
+                method,
+                message,
+                this.logLevel >= LOG_LEVELS.TRACE ? '\r\n' + error.stack : error.message,
+                COLORS.NONE
+            );
         }
     }
 
     public warn(file: string, method: string, message: string) {
         if (this.logLevel >= LOG_LEVELS.WARN) {
-            console.log('%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s%s', COLORS.YELLOW, getTimeStamp(), 'WRN', fileName(file), method, message, COLORS.NONE);
+            console.log(
+                '%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s%s',
+                COLORS.YELLOW,
+                getTimeStamp(),
+                'WRN',
+                fileName(file),
+                method,
+                message,
+                COLORS.NONE
+            );
         }
     }
 
     public info(file: string, method: string, message: string) {
         if (this.logLevel >= LOG_LEVELS.INFO) {
-            console.log('%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s%s', COLORS.NONE, getTimeStamp(), 'INF', fileName(file), method, message, COLORS.NONE);
+            console.log(
+                '%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s%s',
+                COLORS.NONE,
+                getTimeStamp(),
+                'INF',
+                fileName(file),
+                method,
+                message,
+                COLORS.NONE
+            );
         }
     }
 
     public trace(file: string, method: string, message: string) {
         if (this.logLevel >= LOG_LEVELS.TRACE) {
-            console.log('%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s', COLORS.MAGENTA, getTimeStamp(), 'TRC', fileName(file), method, message, COLORS.NONE);
+            console.log(
+                '%s%s : %s : %s' + (method == '' ? '' : ' : ') + '%s : %s',
+                COLORS.MAGENTA,
+                getTimeStamp(),
+                'TRC',
+                fileName(file),
+                method,
+                message,
+                COLORS.NONE
+            );
         }
     }
 
