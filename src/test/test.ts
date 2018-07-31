@@ -2,61 +2,91 @@ import assert from 'assert';
 import { LocalDAO, DATABASES } from '../lib/DAO_Local';
 import { Maze } from '../lib/Maze';
 import { Logger, LOG_LEVELS } from '../lib/Logger';
+import md5 from 'md5';
+import Position from '../lib/Position';
 
 let maze: Maze;
 let noteA = '';
 let noteB = 'Hello MazeMasterJS';
 let mazeId: string = '3:3:5:MochaTestMaze';
+let mazeRenderHashA = 'cabe3140dae3bb230c86320d0414171f';
+let mazeRenderHashB = '3cc1189380815e01cb6c49f5f6e99795';
+
 let dao: LocalDAO = LocalDAO.getInstance();
 
 let log: Logger = Logger.getInstance();
 log.setLogLevel(LOG_LEVELS.WARN);
 
+/**
+ * Maze class test cases:
+ *  + instantiation (new)
+ *  + instantiation (from data)
+ *  + generation
+ *  + text rendering
+ */
 describe('Maze', function() {
-    describe('Maze().generate()', function() {
+    describe('Maze.generate(height, width, seed, challenge))', function() {
         it('should generate new maze without error: ' + mazeId, function() {
             maze = new Maze();
             maze.generate(3, 3, 'MochaTestMaze', 5);
         });
     });
-    describe('Maze().id()', function() {
+    describe('Maze.Id', function() {
         it('should return id ' + mazeId + '', function() {
-            assert.equal(maze.id, mazeId);
+            assert.equal(maze.Id, mazeId);
+        });
+    });
+    describe('Maze.TextRender()', function() {
+        it('should return return text rendering with MD5 hash value of ' + mazeRenderHashA + '', function() {
+            assert.equal(mazeRenderHashA, md5(maze.TextRender));
+        });
+    });
+    describe('Maze.generateTextRender(forceRegen=false)', function() {
+        it('should return return text rendering with MD5 hash value of ' + mazeRenderHashA + '', function() {
+            assert.equal(mazeRenderHashA, md5(maze.generateTextRender(false)));
+        });
+    });
+    describe('Maze.generateTextRender(forceRegen=true, playerPos=(2,2))', function() {
+        it('should return return text rendering with MD5 hash value of ' + mazeRenderHashB + '', function() {
+            assert.equal(mazeRenderHashB, md5(maze.generateTextRender(true, new Position(1, 1))));
         });
     });
 });
 
+/**
+ * Test CRUD operations against local maze database
+ */
 describe('DAO_Local', function() {
     describe('insertDocument(maze)', function() {
-        it('newDoc._id should be ' + mazeId, function(done) {
+        it('newDoc.id should be ' + mazeId, function(done) {
             dao.insertDocument(DATABASES.MAZES, maze, function cbInsertMaze(err: Error, newDoc: any) {
                 if (err) {
                     assert.fail('Document already exists - previous removeDocument() failure?');
                     done(err);
                 } else {
-                    assert.equal(newDoc._id, mazeId);
+                    assert.equal(newDoc.id, mazeId);
                     done();
                 }
             });
         });
     });
     describe('getDocument(maze)', function() {
-        it('doc._id should be ' + mazeId, function(done) {
+        it('doc.id should be ' + mazeId, function(done) {
             dao.getDocument(DATABASES.MAZES, mazeId, function cbGetMaze(err: Error, doc: any) {
-                assert.equal(doc._id, mazeId);
+                assert.equal(doc.id, mazeId);
                 done();
             });
         });
-        it('doc._note should be empty', function(done) {
+        it('doc.note should be empty', function(done) {
             dao.getDocument(DATABASES.MAZES, mazeId, function cbGetMaze(err: Error, doc: any) {
-                assert.equal(doc._note, noteA);
+                assert.equal(doc.note, noteA);
                 done();
             });
         });
     });
     describe('updateDocument(maze)', function() {
         it('numReplaced should be 1', function(done) {
-            maze.note = noteB;
+            maze.Note = noteB;
             dao.updateDocument(DATABASES.MAZES, maze, function cbGetMaze(err: Error, numReplaced: number) {
                 assert.equal(numReplaced, 1);
                 done();
@@ -64,9 +94,9 @@ describe('DAO_Local', function() {
         });
     });
     describe('updateDocument(maze)', function() {
-        it('doc._note should be ' + noteB, function(done) {
+        it('doc.note should be ' + noteB, function(done) {
             dao.getDocument(DATABASES.MAZES, mazeId, function cbGetMaze(err: Error, doc: any) {
-                assert.equal(doc._note, noteB);
+                assert.equal(doc.note, noteB);
                 done();
             });
         });

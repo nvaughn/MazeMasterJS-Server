@@ -1,8 +1,7 @@
 import { format } from 'util';
-import { IPosition } from './IPosition';
 
 // Position - X, Y Coordinates within the maze grid
-export class Position implements IPosition {
+export class Position implements Position {
     public row: number;
     public col: number;
 
@@ -16,16 +15,12 @@ export class Position implements IPosition {
      * the values of the current Pos
      * @param position
      */
-    public equals(position: IPosition): boolean {
+    public equals(position: Position): boolean {
         return this.row == position.row && this.col == position.col;
     }
 
     public toString(): string {
         return format('row: %s, col: %s', this.row, this.col);
-    }
-
-    public toIPosition(): IPosition {
-        return { row: this.row, col: this.col };
     }
 }
 

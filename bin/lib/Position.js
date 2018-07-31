@@ -18,9 +18,6 @@ class Position {
     toString() {
         return util_1.format('row: %s, col: %s', this.row, this.col);
     }
-    toIPosition() {
-        return { row: this.row, col: this.col };
-    }
 }
 exports.Position = Position;
 exports.default = Position;

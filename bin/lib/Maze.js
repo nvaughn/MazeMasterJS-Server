@@ -13,6 +13,7 @@ const log = Logger_1.default.getInstance();
 const MAX_CELL_COUNT = 2500; // control max maze size to prevent overflow due to recursion errors
 const MIN_MAZE_DIMENSION_SIZE = 3; // The smallest allowed maze height & width
 const MIN_TRAPS_CHALLENGE_LEVEL = 3; // the minimum maze challenge level that allows traps
+const MIN_TRAPS_ON_PATH_CHALLENGE_LEVEL = 6; // the minimum maze challenge level that allows traps on the solution path
 let recurseDepth = 0; // tracks the level of recursion during path carving
 let maxRecurseDepth = 0; // tracks the deepest level of carve recursion seen
 let startGenTime = 0; // used to determine time spent generating a maze
@@ -25,30 +26,30 @@ class Maze {
      */
     constructor(data) {
         if (data !== undefined) {
-            this._height = data._height;
-            this._width = data._width;
-            this._seed = data._seed;
-            this._challenge = data._challenge;
-            this._textRender = data._textRender;
-            this._id = data._id;
-            this._startCell = data._startCell;
-            this._finishCell = data._finishCell;
-            this._shortestPathLength = data._shortestPathLength;
-            this._note = data._note;
-            this._cells = this.buildCellsArray(data._cells);
+            this.height = data.height;
+            this.width = data.width;
+            this.seed = data.seed;
+            this.challenge = data.challenge;
+            this.textRender = data.textRender;
+            this.id = data.id;
+            this.startCell = data.startCell;
+            this.finishCell = data.finishCell;
+            this.shortestPathLength = data.shortestPathLength;
+            this.note = data.note;
+            this.cells = this.buildCellsArray(data.cells);
         }
         else {
-            this._height = 0;
-            this._width = 0;
-            this._seed = '';
-            this._challenge = 0;
-            this._textRender = '';
-            this._id = '';
-            this._startCell = new Position_1.Position(0, 0);
-            this._finishCell = new Position_1.Position(0, 0);
-            this._shortestPathLength = 0;
-            this._note = '';
-            this._cells = new Array();
+            this.height = 0;
+            this.width = 0;
+            this.seed = '';
+            this.challenge = 0;
+            this.textRender = '';
+            this.id = '';
+            this.startCell = new Position_1.Position(0, 0);
+            this.finishCell = new Position_1.Position(0, 0);
+            this.shortestPathLength = 0;
+            this.note = '';
+            this.cells = new Array();
         }
     }
     // actually have to rebuild the entire cells array
@@ -68,14 +69,11 @@ class Maze {
         return newCells;
     }
     getCell(pos) {
-        if (pos.row < 0 || pos.row > this._cells.length || pos.col < 0 || pos.col > this._cells[0].length) {
+        if (pos.row < 0 || pos.row > this.cells.length || pos.col < 0 || pos.col > this.cells[0].length) {
             log.warn(__filename, util_1.format('getCell(%d, %d', pos.row, pos.col), 'Invalid cell coordinates given.');
             throw new Error(util_1.format('Index Out of Bounds - Invalid cell coordinates given: row:%d, col:%d.'));
         }
-        return this._cells[pos.row][pos.col];
-    }
-    getICell(pos) {
-        return this.getCell(pos).toICell();
+        return this.cells[pos.row][pos.col];
     }
     getCellNeighbor(cell, dir) {
         // move location of next cell according to random direction
@@ -97,7 +95,7 @@ class Maze {
      */
     generate(height, width, seed, challengeLevel) {
         this.challenge = challengeLevel;
-        if (this._cells.length > 0) {
+        if (this.cells.length > 0) {
             log.warn(__filename, 'generate()', 'This maze has already been generated.');
             return this;
         }
@@ -127,7 +125,7 @@ class Maze {
         // set maze's ID
         this.id = util_1.format('%d:%d:%d:%s', this.height, this.width, this.challenge, this.seed);
         // build the empty cells array
-        this._cells = new Array(height);
+        this.cells = new Array(height);
         for (let y = 0; y < height; y++) {
             let row = new Array();
             for (let x = 0; x < width; x++) {
@@ -135,7 +133,7 @@ class Maze {
                 cell.setLocation(x, y);
                 row.push(cell);
             }
-            this._cells[y] = row;
+            this.cells[y] = row;
         }
         log.debug(__filename, 'generate()', util_1.format('Generated [%d][%d] grid of %d empty cells.', height, width, height * width));
         // randomize start and finish locations
@@ -144,11 +142,11 @@ class Maze {
         log.debug(__filename, 'generate()', util_1.format('Adding START ([%d][%d]) and FINISH ([%d][%d]) cells.', 0, startCol, height - 1, finishCol));
         // tag start and finish columns (start / finish tags force matching exits on edge)
         this.startCell = new Position_1.Position(0, startCol);
-        this._cells[0][startCol].addTag(Enumerations_1.TAGS.START);
+        this.cells[0][startCol].addTag(Enumerations_1.TAGS.START);
         this.finishCell = new Position_1.Position(height - 1, finishCol);
-        this._cells[height - 1][finishCol].addTag(Enumerations_1.TAGS.FINISH);
+        this.cells[height - 1][finishCol].addTag(Enumerations_1.TAGS.FINISH);
         // start the carving routine
-        this.carvePassage(this._cells[0][0]);
+        this.carvePassage(this.cells[0][0]);
         // now solve the maze and tag the path
         recurseDepth = 0;
         this.solveAndTag();
@@ -160,8 +158,8 @@ class Maze {
             log.debug(__filename, 'generate()', util_1.format('Maze Challenge Level (%s) is below the minimum CL allowing traps (%s). Skipping trap generation.', this.challenge, MIN_TRAPS_CHALLENGE_LEVEL));
         }
         // render the maze so the text rendering is set
-        this.render();
-        log.info(__filename, 'generate()', util_1.format('Generation Complete: Time=%dms, Recursion=%d, MazeID=%s', Date.now() - startGenTime, maxRecurseDepth, this._id));
+        this.generateTextRender(true);
+        log.info(__filename, 'generate()', util_1.format('Generation Complete: Time=%dms, Recursion=%d, MazeID=%s', Date.now() - startGenTime, maxRecurseDepth, this.id));
         return this;
     }
     /**
@@ -190,9 +188,9 @@ class Maze {
                 nx = dirs[n] == Enumerations_1.DIRS.EAST ? nx + 1 : nx - 1;
             try {
                 // if the next call has valid grid coordinates, get it and carve into it
-                if (ny >= 0 && ny < this._cells.length && nx >= 0 && nx < this._cells[0].length) {
-                    let nextCell = this._cells[ny][nx];
-                    if (!(nextCell.getTags() & Enumerations_1.TAGS.CARVED) && cell.addExit(dirs[n], this._cells)) {
+                if (ny >= 0 && ny < this.cells.length && nx >= 0 && nx < this.cells[0].length) {
+                    let nextCell = this.cells[ny][nx];
+                    if (!(nextCell.getTags() & Enumerations_1.TAGS.CARVED) && cell.addExit(dirs[n], this.cells)) {
                         // this is a good move, so mark the cell as carved
                         nextCell.addTag(Enumerations_1.TAGS.CARVED);
                         // and carve into the next cell
@@ -213,7 +211,7 @@ class Maze {
      * Returns a text rendering of the maze as a grid of 3x3
      * character blocks.
      */
-    render() {
+    generateTextRender(forceRegen, playerPos) {
         const H_WALL = '+---';
         const S_DOOR = '+ S ';
         const F_DOOR = '+ F ';
@@ -223,10 +221,10 @@ class Maze {
         const CENTER = '   ';
         const SOLUTION = ' . ';
         const ROW_END = '+';
-        const CARVED = '   ';
+        const AVATAR_TRAPPED = '>@<';
         const AVATAR = ' @ ';
         // TODO: Turn back on render caching after solver work is completed
-        if (this.textRender.length > 0) {
+        if (this.textRender.length > 0 && !forceRegen) {
             return this.textRender;
         }
         let textMaze = '';
@@ -236,7 +234,7 @@ class Maze {
                 let row = '';
                 // each text-cell is actually three
                 for (let x = 0; x < this.width; x++) {
-                    let cell = this._cells[y][x];
+                    let cell = this.cells[y][x];
                     switch (subRow) {
                         case 0:
                             // only render north walls on first row
@@ -256,6 +254,15 @@ class Maze {
                             }
                             // render room center - check for cell properties and render appropriately
                             let cellFill = CENTER;
+                            let tags = cell.getTags();
+                            if (playerPos !== undefined && this.cells[y][x].getPos().equals(playerPos)) {
+                                if (!!(tags & Enumerations_1.TAGS.TRAP_BEARTRAP) || !!(tags & Enumerations_1.TAGS.TRAP_PIT) || !!(tags & Enumerations_1.TAGS.TRAP_FLAMETHOWER)) {
+                                    cellFill = AVATAR_TRAPPED;
+                                }
+                                else {
+                                    cellFill = AVATAR;
+                                }
+                            }
                             if (!!(cell.getTags() & Enumerations_1.TAGS.PATH))
                                 cellFill = SOLUTION;
                             if (!!(cell.getTags() & Enumerations_1.TAGS.TRAP_BEARTRAP))
@@ -378,25 +385,50 @@ class Maze {
         if (playerPos.equals(this.finishCell)) {
             log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Adding PATH tag to %s.', recurseDepth, pathId, cell.getPos().toString()));
             this.shortestPathLength++;
+            // clear existing tags and add the path tag - traps come later
             cell.clearTags();
             cell.addTag(Enumerations_1.TAGS.PATH);
         }
         recurseDepth--;
         log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Path complete.', recurseDepth, pathId));
     } // end tagSolution()
+    // test if cell has a trap
+    hasTrap(cell) {
+        let tags = cell.getTags();
+        if (!!(tags & Enumerations_1.TAGS.TRAP_BEARTRAP))
+            return true;
+        if (!!(tags & Enumerations_1.TAGS.TRAP_PIT))
+            return true;
+        if (!!(tags & Enumerations_1.TAGS.TRAP_FLAMETHOWER))
+            return true;
+        if (!!(tags & Enumerations_1.TAGS.TRAP_TARPIT))
+            return true;
+        return false;
+    }
     addTraps() {
         log.debug(__filename, 'addTraps()', util_1.format('Generating traps for challenge level %s maze.', this.challenge));
         let trapCount = 0;
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
-                let cell = this._cells[y][x];
+                let cell = this.cells[y][x];
                 // traps only allowed if there are open cells on either side to allow jumping
                 // traps on the solution path will be removed when solution is
-                let trapAllowed = !!(cell.getExits() & Enumerations_1.DIRS.NORTH) && !!(cell.getExits() & Enumerations_1.DIRS.SOUTH); // north-south safe
+                let exits = cell.getExits();
+                let trapAllowed = !!(exits & Enumerations_1.DIRS.NORTH) && !!(exits & Enumerations_1.DIRS.SOUTH); // north-south safe to jump
                 if (!trapAllowed)
-                    trapAllowed = !!(cell.getExits() & Enumerations_1.DIRS.NORTH) && !!(cell.getExits() & Enumerations_1.DIRS.SOUTH); // not north-south save, but east-west safe?
-                if (trapAllowed)
-                    trapAllowed = !(cell.getTags() & Enumerations_1.TAGS.PATH); // cancel both if trap is on solution path
+                    trapAllowed = !!(exits & Enumerations_1.DIRS.EAST) && !!(exits & Enumerations_1.DIRS.WEST); // not north-south save, but east-west safe to jump?
+                if (trapAllowed && this.challenge < MIN_TRAPS_ON_PATH_CHALLENGE_LEVEL)
+                    trapAllowed = !(cell.getTags() & Enumerations_1.TAGS.PATH); // No traps on solution path for easier mazes
+                // now make sure that we don't double up on traps, making them not jumpable
+                if (trapAllowed && y > 0 && !!(exits & Enumerations_1.DIRS.NORTH))
+                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enumerations_1.DIRS.NORTH));
+                if (trapAllowed && y < this.height - 1 && !!(exits & Enumerations_1.DIRS.SOUTH))
+                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enumerations_1.DIRS.SOUTH));
+                if (trapAllowed && x < this.width - 1 && !!(exits & Enumerations_1.DIRS.EAST))
+                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enumerations_1.DIRS.EAST));
+                if (trapAllowed && x > 0 && !!(exits & Enumerations_1.DIRS.WEST))
+                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enumerations_1.DIRS.WEST));
+                // all is well - let's roll the die a few times to see if we get a trap
                 if (trapAllowed) {
                     let trapTries = Math.floor(this.challenge / 4);
                     log.trace(__filename, 'addTraps()', util_1.format('trapTries=', trapTries));
@@ -429,68 +461,41 @@ class Maze {
         }
         log.debug(__filename, 'addTraps()', util_1.format('Trap generation complete. Total trap count=%s', trapCount));
     }
-    get height() {
-        return this._height;
+    get Height() {
+        return this.height;
     }
-    set height(value) {
-        this._height = value;
+    get Width() {
+        return this.width;
     }
-    get width() {
-        return this._width;
+    get Seed() {
+        return this.seed;
     }
-    set width(value) {
-        this._width = value;
+    get Challenge() {
+        return this.challenge;
     }
-    get seed() {
-        return this._seed;
+    get Cells() {
+        return this.cells;
     }
-    set seed(value) {
-        this._seed = value;
+    get TextRender() {
+        return this.textRender;
     }
-    get challenge() {
-        return this._challenge;
+    get Id() {
+        return this.id;
     }
-    set challenge(value) {
-        this._challenge = value;
+    get StartCell() {
+        return this.startCell;
     }
-    get cells() {
-        return this._cells;
+    get FinishCell() {
+        return this.finishCell;
     }
-    get textRender() {
-        return this._textRender;
+    get ShortestPathLength() {
+        return this.shortestPathLength;
     }
-    set textRender(value) {
-        this._textRender = value;
+    get Note() {
+        return this.note;
     }
-    get id() {
-        return this._id;
-    }
-    set id(value) {
-        this._id = value;
-    }
-    get startCell() {
-        return this._startCell;
-    }
-    set startCell(value) {
-        this._startCell = value;
-    }
-    get finishCell() {
-        return this._finishCell;
-    }
-    set finishCell(value) {
-        this._finishCell = value;
-    }
-    get shortestPathLength() {
-        return this._shortestPathLength;
-    }
-    set shortestPathLength(value) {
-        this._shortestPathLength = value;
-    }
-    get note() {
-        return this._note;
-    }
-    set note(value) {
-        this._note = value;
+    set Note(value) {
+        this.note = value;
     }
 }
 exports.Maze = Maze;

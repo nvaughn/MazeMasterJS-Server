@@ -34,17 +34,24 @@ var DATABASES;
 class LocalDAO {
     // must use getInstance()
     constructor() {
-        log.info(__filename, '', util_1.format('%s %s', !file_exists_1.default.sync(mazesDbFile) ? 'Creating' : 'Loading', mazesDbFile));
+        log.info(__filename, '', util_1.format('%s %s', !file_exists_1.default.sync(scoresDbFile) ? 'Creating' : 'Loading', mazesDbFile));
         this.dbMazes = new NeDB({ filename: mazesDbFile, autoload: true });
-        // NOTE: NeDB automatically invokes unique index on _id ... leaving commented code for future reference
-        //
-        // this.dbMazes.ensureIndex({ fieldName: '_id', unique: true }, function(err) {
-        //     log.error(__filename, 'constructor()', 'Unable to ensure unique index on field _id in ' + mazesDbFile, err);
-        // });
+        this.dbMazes.ensureIndex({ fieldName: 'id', unique: true }, function (err) {
+            if (err)
+                log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + mazesDbFile, err);
+        });
         log.info(__filename, '', util_1.format('%s %s', !file_exists_1.default.sync(scoresDbFile) ? 'Creating' : 'Loading', scoresDbFile));
         this.dbScores = new NeDB({ filename: scoresDbFile, autoload: true });
+        this.dbScores.ensureIndex({ fieldName: 'id', unique: true }, function (err) {
+            if (err)
+                log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + scoresDbFile, err);
+        });
         log.info(__filename, '', util_1.format('%s %s', !file_exists_1.default.sync(teamsDbFile) ? 'Creating' : 'Loading', teamsDbFile));
         this.dbTeams = new NeDB({ filename: teamsDbFile, autoload: true });
+        this.dbTeams.ensureIndex({ fieldName: 'id', unique: true }, function (err) {
+            if (err)
+                log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + teamsDbFile, err);
+        });
     }
     // singleton instance pattern
     static getInstance() {
@@ -59,7 +66,7 @@ class LocalDAO {
         // set a database reference object
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
         tDb.insert(object, function (err, newDoc) {
-            if (err && err !== undefined)
+            if (err)
                 throw err;
             if (callback !== undefined)
                 callback(err, newDoc);
@@ -72,8 +79,8 @@ class LocalDAO {
         // set a database reference object
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
         // attempt to update the document with the given id
-        tDb.update({ _id: object.id }, object, {}, function (err, numReplaced) {
-            if (err && err !== undefined)
+        tDb.update({ id: object.id }, object, {}, function (err, numReplaced) {
+            if (err)
                 throw err;
             if (callback !== undefined)
                 callback(err, numReplaced);
@@ -86,8 +93,8 @@ class LocalDAO {
         // set a database reference object
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
         // find the first matching document
-        tDb.findOne({ _id: objectId }, function (err, doc) {
-            if (err && err !== undefined)
+        tDb.findOne({ id: objectId }, function (err, doc) {
+            if (err)
                 throw err;
             if (callback !== undefined)
                 callback(err, doc);
@@ -101,12 +108,21 @@ class LocalDAO {
         // set a database reference object
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
         // find the first matching document
-        tDb.remove({ _id: objectId }, function (err, numRemoved) {
-            if (err && err !== undefined)
+        tDb.remove({ id: objectId }, function (err, numRemoved) {
+            if (err)
                 throw err;
             if (callback !== undefined)
                 callback(err, numRemoved);
             log.debug(__filename, fnName, util_1.format('[%s].%s completed. %s documents removed. Callback to %s.', DATABASES[targetDb], objectId, numRemoved, cbName));
+        });
+    }
+    getDocumentCount(targetDb, callback) {
+        let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
+        tDb.count({}, function (err, n) {
+            if (err)
+                throw err;
+            log.debug(__filename, 'getDocumentCount()', util_1.format('[%s].getDocumentCount() completed. %s documents found. Callback to %s.', DATABASES[targetDb], n, callback.name));
+            callback(err, n);
         });
     }
 }

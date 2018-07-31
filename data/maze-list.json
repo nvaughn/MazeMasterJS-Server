@@ -1,0 +1,26 @@
+{
+    "stubs": [
+        { "seed": "Tiny Trek", "height": 3, "width": 3, "challenge": 1 },
+        { "seed": "Miniature March", "height": 3, "width": 5, "challenge": 1 },
+        { "seed": "Short Stroll", "height": 5, "width": 5, "challenge": 2 },
+        { "seed": "Winding Walk", "height": 5, "width": 10, "challenge": 3 },
+        { "seed": "Simmering Shuffle", "height": 10, "width": 10, "challenge": 3 },
+        { "seed": "Terrible Traipse", "height": 10, "width": 15, "challenge": 4 },
+        { "seed": "Horrible Hike", "height": 15, "width": 15, "challenge": 4 },
+        { "seed": "Jarring Jog", "height": 15, "width": 20, "challenge": 4 },
+        { "seed": "Turkey Trot", "height": 20, "width": 20, "challenge": 5 },
+        { "seed": "Painful Promenade", "height": 20, "width": 25, "challenge": 5 },
+        { "seed": "Searing Sprint", "height": 25, "width": 25, "challenge": 6 },
+        { "seed": "Deadly Dash", "height": 25, "width": 30, "challenge": 6 },
+        { "seed": "Tormenting Tour", "height": 30, "width": 30, "challenge": 7 },
+        { "seed": "Miserable Mile", "height": 30, "width": 35, "challenge": 7 },
+        { "seed": "Boiling Bound", "height": 35, "width": 35, "challenge": 8 },
+        { "seed": "Painful Pace", "height": 35, "width": 40, "challenge": 8 },
+        { "seed": "Gangrenous Gallop", "height": 40, "width": 40, "challenge": 9 },
+        { "seed": "Fearful Flight", "height": 40, "width": 45, "challenge": 9 },
+        { "seed": "Withershins' Wander", "height": 45, "width": 45, "challenge": 10 },
+        { "seed": "Ridiculous Ramble", "height": 45, "width": 50, "challenge": 10 },
+        { "seed": "Miserable Marathon", "height": 50, "width": 50, "challenge": 10 },
+        { "seed": "Farstrider's Folly", "height": 50, "width": 50, "challenge": 11 }
+    ]
+}

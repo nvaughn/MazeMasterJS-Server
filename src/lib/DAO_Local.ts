@@ -15,8 +15,8 @@
 import Logger from './Logger';
 import fileExists from 'file-exists';
 import { format as fmt } from 'util';
-import Maze from './Maze';
 import NeDB = require('nedb');
+import * as helpers from './Helpers';
 
 const log = Logger.getInstance();
 const mazesDbFile = 'data/mazes.db';
@@ -37,20 +37,23 @@ export class LocalDAO {
 
     // must use getInstance()
     private constructor() {
-        log.info(__filename, '', fmt('%s %s', !fileExists.sync(mazesDbFile) ? 'Creating' : 'Loading', mazesDbFile));
+        log.info(__filename, '', fmt('%s %s', !fileExists.sync(scoresDbFile) ? 'Creating' : 'Loading', mazesDbFile));
         this.dbMazes = new NeDB({ filename: mazesDbFile, autoload: true });
-
-        // NOTE: NeDB automatically invokes unique index on _id ... leaving commented code for future reference
-        //
-        // this.dbMazes.ensureIndex({ fieldName: '_id', unique: true }, function(err) {
-        //     log.error(__filename, 'constructor()', 'Unable to ensure unique index on field _id in ' + mazesDbFile, err);
-        // });
+        this.dbMazes.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
+            if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + mazesDbFile, err);
+        });
 
         log.info(__filename, '', fmt('%s %s', !fileExists.sync(scoresDbFile) ? 'Creating' : 'Loading', scoresDbFile));
         this.dbScores = new NeDB({ filename: scoresDbFile, autoload: true });
+        this.dbScores.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
+            if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + scoresDbFile, err);
+        });
 
         log.info(__filename, '', fmt('%s %s', !fileExists.sync(teamsDbFile) ? 'Creating' : 'Loading', teamsDbFile));
         this.dbTeams = new NeDB({ filename: teamsDbFile, autoload: true });
+        this.dbTeams.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
+            if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + teamsDbFile, err);
+        });
     }
 
     // singleton instance pattern
@@ -69,7 +72,7 @@ export class LocalDAO {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
 
         tDb.insert(object, function(err, newDoc) {
-            if (err && err !== undefined) throw err;
+            if (err) throw err;
             if (callback !== undefined) callback(err, newDoc);
             log.debug(__filename, fnName, fmt('[%s].%s completed. Callback to %s.', DATABASES[targetDb], object.id, cbName));
         });
@@ -83,8 +86,8 @@ export class LocalDAO {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
 
         // attempt to update the document with the given id
-        tDb.update({ _id: object.id }, object, {}, function(err, numReplaced) {
-            if (err && err !== undefined) throw err;
+        tDb.update({ id: object.id }, object, {}, function(err, numReplaced) {
+            if (err) throw err;
             if (callback !== undefined) callback(err, numReplaced);
             log.debug(__filename, fnName, fmt('[%s].%s completed. %s documents updated. Callback to %s.', DATABASES[targetDb], object.id, numReplaced, cbName));
         });
@@ -98,8 +101,8 @@ export class LocalDAO {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
 
         // find the first matching document
-        tDb.findOne({ _id: objectId }, function(err, doc) {
-            if (err && err !== undefined) throw err;
+        tDb.findOne({ id: objectId }, function(err, doc) {
+            if (err) throw err;
             if (callback !== undefined) callback(err, doc);
             log.debug(__filename, fnName, fmt('[%s].%s completed. Callback to %s.', DATABASES[targetDb], objectId, cbName));
         });
@@ -114,10 +117,19 @@ export class LocalDAO {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
 
         // find the first matching document
-        tDb.remove({ _id: objectId }, function(err, numRemoved) {
-            if (err && err !== undefined) throw err;
+        tDb.remove({ id: objectId }, function(err, numRemoved) {
+            if (err) throw err;
             if (callback !== undefined) callback(err, numRemoved);
             log.debug(__filename, fnName, fmt('[%s].%s completed. %s documents removed. Callback to %s.', DATABASES[targetDb], objectId, numRemoved, cbName));
+        });
+    }
+
+    public getDocumentCount(targetDb: DATABASES, callback: Function) {
+        let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
+        tDb.count({}, function(err: Error, n: number) {
+            if (err) throw err;
+            log.debug(__filename, 'getDocumentCount()', fmt('[%s].getDocumentCount() completed. %s documents found. Callback to %s.', DATABASES[targetDb], n, callback.name));
+            callback(err, n);
         });
     }
 }
