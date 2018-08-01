@@ -3,8 +3,7 @@
  * Data access object abstracts database implementation from server logic
  * allowing the underlying database to be replaced if needed.
  *
- * All objects passed MUST supply an "object.id" property that returns
- * a unique value.
+ * All objects passed MUST HAVE an "object.id" property that returns a unique value.
  *
  * LocalDAO wraps access to a local, document-based NO-SQL database called
  * "NeDB" that stores data as json in local text files.  The NeDB API closely
