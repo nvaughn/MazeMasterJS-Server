@@ -93,4 +93,11 @@ var GAME_STATES;
     GAME_STATES[GAME_STATES["ABORTED"] = 3] = "ABORTED";
     GAME_STATES[GAME_STATES["ERROR"] = 4] = "ERROR";
 })(GAME_STATES = exports.GAME_STATES || (exports.GAME_STATES = {}));
+// database types/names
+var DATABASES;
+(function (DATABASES) {
+    DATABASES[DATABASES["MAZES"] = 0] = "MAZES";
+    DATABASES[DATABASES["SCORES"] = 1] = "SCORES";
+    DATABASES[DATABASES["TEAMS"] = 2] = "TEAMS";
+})(DATABASES = exports.DATABASES || (exports.DATABASES = {}));
 //# sourceMappingURL=Enumerations.js.map

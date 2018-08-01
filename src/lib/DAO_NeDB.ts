@@ -16,8 +16,11 @@ import fileExists from 'file-exists';
 import { format as fmt } from 'util';
 import NeDB from 'nedb';
 import lzutf8 from 'lzutf8';
+import { DATABASES } from './Enumerations';
+import { DAO_Interface } from './DAO_Interface';
 
 const log = Logger.getInstance();
+
 const mazesDbFile = 'data/mazes.db';
 const scoresDbFile = 'data/scores.db';
 const teamsDbFile = 'data/teams.db';
@@ -25,14 +28,8 @@ const teamsDbFile = 'data/teams.db';
 const COMPRESSION_ENABLED = false; // enables inline text compression
 const COMPRESSION_ENCODING = 'Base64'; // Supported Options: Base64 (smallest and as fast as SBS), StorageBinaryString (small, fast, but unreadable), ByteArray (requires buffering)
 
-export enum DATABASES {
-    MAZES = 0,
-    SCORES,
-    TEAMS
-}
-
-export class LocalDAO {
-    private static instance: LocalDAO;
+export class DAO_NeDb implements DAO_Interface {
+    private static instance: DAO_NeDb;
     private dbMazes: NeDB;
     private dbScores: NeDB;
     private dbTeams: NeDB;
@@ -60,10 +57,10 @@ export class LocalDAO {
 
     // singleton instance pattern
     static getInstance() {
-        if (!LocalDAO.instance) {
-            LocalDAO.instance = new LocalDAO();
+        if (!DAO_NeDb.instance) {
+            DAO_NeDb.instance = new DAO_NeDb();
         }
-        return LocalDAO.instance;
+        return DAO_NeDb.instance;
     }
 
     // compresses the object for storage, retaining the object.Id needed for retrieval
@@ -77,7 +74,7 @@ export class LocalDAO {
         return JSON.parse(dDoc);
     }
 
-    public insertDocument(targetDb: DATABASES, object: any, callback?: Function) {
+    public insertDocument(targetDb: DATABASES, object: any, callback?: Function): any {
         let fnName = 'insertDocument([DocID: ' + object.id + '])';
         let cbName = callback !== undefined ? callback.name : 'N/A';
 
@@ -125,7 +122,7 @@ export class LocalDAO {
             if (err) throw err;
 
             // decompress the document if found
-            if (doc && COMPRESSION_ENABLED) doc = LocalDAO.getInstance().decompressDocument(doc);
+            if (doc && COMPRESSION_ENABLED) doc = DAO_NeDb.getInstance().decompressDocument(doc);
 
             log.debug(__filename, fnName, fmt('[%s].%s completed. Callback to %s.', DATABASES[targetDb], objectId, cbName));
             callback(err, doc);
@@ -152,10 +149,10 @@ export class LocalDAO {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
         tDb.count({}, function(err: Error, n: number) {
             if (err) throw err;
-            log.debug(__filename, 'getDocumentCount()', fmt('[%s].getDocumentCount() completed. %s documents found. Callback to %s.', DATABASES[targetDb], n, callback.name));
+            log.debug(__filename, 'getDocumentCount()', fmt('[%s] %s docs found. Callback: %s.', DATABASES[targetDb], n, callback.name));
             callback(err, n);
         });
     }
 }
 
-export default LocalDAO;
+export default DAO_NeDb;

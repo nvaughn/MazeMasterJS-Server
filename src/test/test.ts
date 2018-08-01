@@ -1,9 +1,10 @@
 import assert from 'assert';
-import { LocalDAO, DATABASES } from '../lib/DAO_Local';
+import { DAO_NeDb } from '../lib/DAO_NeDB';
 import { Maze } from '../lib/Maze';
 import { Logger, LOG_LEVELS } from '../lib/Logger';
 import md5 from 'md5';
 import Position from '../lib/Position';
+import { DATABASES } from '../lib/Enumerations';
 
 let maze: Maze;
 let noteA = '';
@@ -11,7 +12,7 @@ let noteB = 'Hello MazeMasterJS';
 let mazeId: string = '3:3:5:MochaTestMaze';
 let mazeRenderHashA = '0a57600e3b025972b5f30482ae692682';
 let mazeRenderHashB = '711f426d24b0e6d39403910fc34d5284';
-let dao: LocalDAO = LocalDAO.getInstance();
+let dao: DAO_NeDb = DAO_NeDb.getInstance();
 let log: Logger = Logger.getInstance();
 
 log.setLogLevel(LOG_LEVELS.WARN);

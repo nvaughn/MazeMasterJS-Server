@@ -4,9 +4,10 @@
 import fs from 'fs';
 import path from 'path';
 import { format as fmt } from 'util';
-import LocalDAO, { DATABASES } from './DAO_Local';
 import { Logger, LOG_LEVELS } from './Logger';
 import Maze from './Maze';
+import { DATABASES } from './Enumerations';
+import { DAO_NeDb } from './DAO_NeDB';
 
 const log = Logger.getInstance();
 const DEFAULT_MAZE_STUB_FILE = path.resolve('data/maze-list.json');
@@ -63,7 +64,7 @@ export function getSelectedBitNames(bitwiseEnum: Object, selectedBits: number): 
 export function generateDefaultMazes() {
     let mazeList = JSON.parse(fs.readFileSync(DEFAULT_MAZE_STUB_FILE, 'utf8'));
     let targetDb = DATABASES.MAZES;
-    let dao = LocalDAO.getInstance();
+    let dao = DAO_NeDb.getInstance();
 
     log.setLogLevel(LOG_LEVELS.DEBUG);
 

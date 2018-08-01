@@ -4,18 +4,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert_1 = __importDefault(require("assert"));
-const DAO_Local_1 = require("../lib/DAO_Local");
+const DAO_NeDB_1 = require("../lib/DAO_NeDB");
 const Maze_1 = require("../lib/Maze");
 const Logger_1 = require("../lib/Logger");
 const md5_1 = __importDefault(require("md5"));
 const Position_1 = __importDefault(require("../lib/Position"));
+const Enumerations_1 = require("../lib/Enumerations");
 let maze;
 let noteA = '';
 let noteB = 'Hello MazeMasterJS';
 let mazeId = '3:3:5:MochaTestMaze';
 let mazeRenderHashA = '0a57600e3b025972b5f30482ae692682';
 let mazeRenderHashB = '711f426d24b0e6d39403910fc34d5284';
-let dao = DAO_Local_1.LocalDAO.getInstance();
+let dao = DAO_NeDB_1.DAO_NeDb.getInstance();
 let log = Logger_1.Logger.getInstance();
 log.setLogLevel(Logger_1.LOG_LEVELS.WARN);
 /**
@@ -59,7 +60,7 @@ describe('Maze', function () {
 describe('DAO_Local', function () {
     describe('insertDocument(maze)', function () {
         it('newDoc.id should be ' + mazeId, function (done) {
-            dao.insertDocument(DAO_Local_1.DATABASES.MAZES, maze, function cbInsertMaze(err, newDoc) {
+            dao.insertDocument(Enumerations_1.DATABASES.MAZES, maze, function cbInsertMaze(err, newDoc) {
                 if (err) {
                     assert_1.default.fail('Document already exists - previous removeDocument() failure?');
                     done(err);
@@ -73,13 +74,13 @@ describe('DAO_Local', function () {
     });
     describe('getDocument(maze)', function () {
         it('doc.id should be ' + mazeId, function (done) {
-            dao.getDocument(DAO_Local_1.DATABASES.MAZES, mazeId, function cbGetMaze(err, doc) {
+            dao.getDocument(Enumerations_1.DATABASES.MAZES, mazeId, function cbGetMaze(err, doc) {
                 assert_1.default.equal(doc.id, mazeId);
                 done();
             });
         });
         it('doc.note should be empty', function (done) {
-            dao.getDocument(DAO_Local_1.DATABASES.MAZES, mazeId, function cbGetMaze(err, doc) {
+            dao.getDocument(Enumerations_1.DATABASES.MAZES, mazeId, function cbGetMaze(err, doc) {
                 assert_1.default.equal(doc.note, noteA);
                 done();
             });
@@ -88,7 +89,7 @@ describe('DAO_Local', function () {
     describe('updateDocument(maze)', function () {
         it('numReplaced should be 1', function (done) {
             maze.Note = noteB;
-            dao.updateDocument(DAO_Local_1.DATABASES.MAZES, maze, function cbGetMaze(err, numReplaced) {
+            dao.updateDocument(Enumerations_1.DATABASES.MAZES, maze, function cbGetMaze(err, numReplaced) {
                 assert_1.default.equal(numReplaced, 1);
                 done();
             });
@@ -96,7 +97,7 @@ describe('DAO_Local', function () {
     });
     describe('updateDocument(maze)', function () {
         it('doc.note should be ' + noteB, function (done) {
-            dao.getDocument(DAO_Local_1.DATABASES.MAZES, mazeId, function cbGetMaze(err, doc) {
+            dao.getDocument(Enumerations_1.DATABASES.MAZES, mazeId, function cbGetMaze(err, doc) {
                 assert_1.default.equal(doc.note, noteB);
                 done();
             });
@@ -104,7 +105,7 @@ describe('DAO_Local', function () {
     });
     describe('removeDocument(maze)', function () {
         it('numRemoved should be 1', function (done) {
-            dao.removeDocument(DAO_Local_1.DATABASES.MAZES, mazeId, function cbGetMaze(err, numRemoved) {
+            dao.removeDocument(Enumerations_1.DATABASES.MAZES, mazeId, function cbGetMaze(err, numRemoved) {
                 assert_1.default.equal(numRemoved, 1);
                 done();
             });

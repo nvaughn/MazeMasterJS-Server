@@ -6,26 +6,31 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = require("./lib/Logger");
-const DAO_Local_1 = require("./lib/DAO_Local");
+const DAO_NeDB_1 = require("./lib/DAO_NeDB");
 const helpers = __importStar(require("./lib/Helpers"));
-Logger_1.Logger;
+const express_1 = __importDefault(require("express"));
+const Enumerations_1 = require("./lib/Enumerations");
 // set up logger
 const log = Logger_1.Logger.getInstance();
 log.setLogLevel(Logger_1.LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
-// get data access object instance
-// currently using a local NeDB JSON DB
-const dao = DAO_Local_1.LocalDAO.getInstance();
-// start up the server
+// set up express
+const app = express_1.default();
+// get data access object instance (local NeDB connector)
+const dao = DAO_NeDB_1.DAO_NeDb.getInstance();
+// Start the Server
 startServer();
 /**
  * Starts up the express server
  */
 function startServer() {
     log.info(__filename, 'startServer()', 'Server started.');
-    dao.getDocumentCount(DAO_Local_1.DATABASES.MAZES, function cbCountMazes(err, count) {
+    dao.getDocumentCount(Enumerations_1.DATABASES.MAZES, function cbCountMazes(err, count) {
         if (count == 0) {
             log.warn(__filename, 'startServer()', 'No maze documents found in the mazes database - generating default mazes now...');
             helpers.generateDefaultMazes();

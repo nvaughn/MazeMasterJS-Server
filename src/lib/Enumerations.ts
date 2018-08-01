@@ -90,3 +90,10 @@ export enum GAME_STATES {
     ABORTED,
     ERROR
 }
+
+// database types/names
+export enum DATABASES {
+    MAZES = 0,
+    SCORES,
+    TEAMS
+}

@@ -1,20 +1,22 @@
 import { format as fmt } from 'util';
 import { Logger, LOG_LEVELS } from './lib/Logger';
-import { LocalDAO, DATABASES } from './lib/DAO_Local';
-import { Maze } from './lib/Maze';
+import { DAO_NeDb } from './lib/DAO_NeDB';
 import * as helpers from './lib/Helpers';
+import express from 'express';
+import { DATABASES } from './lib/Enumerations';
 
-Logger;
 // set up logger
 const log = Logger.getInstance();
 log.setLogLevel(LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
 
-// get data access object instance
-// currently using a local NeDB JSON DB
-const dao = LocalDAO.getInstance();
+// set up express
+const app = express();
 
-// start up the server
+// get data access object instance (local NeDB connector)
+const dao = DAO_NeDb.getInstance();
+
+// Start the Server
 startServer();
 
 /**
