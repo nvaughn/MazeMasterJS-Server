@@ -9,12 +9,11 @@ let maze: Maze;
 let noteA = '';
 let noteB = 'Hello MazeMasterJS';
 let mazeId: string = '3:3:5:MochaTestMaze';
-let mazeRenderHashA = 'cabe3140dae3bb230c86320d0414171f';
-let mazeRenderHashB = '3cc1189380815e01cb6c49f5f6e99795';
-
+let mazeRenderHashA = '0a57600e3b025972b5f30482ae692682';
+let mazeRenderHashB = '711f426d24b0e6d39403910fc34d5284';
 let dao: LocalDAO = LocalDAO.getInstance();
-
 let log: Logger = Logger.getInstance();
+
 log.setLogLevel(LOG_LEVELS.WARN);
 
 /**

@@ -1,7 +1,6 @@
 /**
  * Helper Functions for Maze Master JS
  */
-
 import fs from 'fs';
 import path from 'path';
 import { format as fmt } from 'util';

@@ -27,7 +27,11 @@ function testBlock() {
     let maze = new Maze_1.Maze();
     maze.generate(3, 3, 'test', 5);
     dao.insertDocument(DAO_Local_1.DATABASES.MAZES, maze, function cbInsertTest(err, newDoc) {
-        console.log('TEST BLOCK -- done -- REMOVE THIS SOME DAY');
+        console.log('Compressed and stored.');
+    });
+    dao.getDocument(DAO_Local_1.DATABASES.MAZES, maze.Id, function cbGetTest(err, doc) {
+        let m2 = new Maze_1.Maze(doc);
+        console.log(m2.TextRender);
     });
 }
 /**

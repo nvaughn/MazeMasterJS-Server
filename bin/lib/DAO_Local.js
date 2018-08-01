@@ -20,11 +20,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = __importDefault(require("./Logger"));
 const file_exists_1 = __importDefault(require("file-exists"));
 const util_1 = require("util");
-const NeDB = require("nedb");
+const nedb_1 = __importDefault(require("nedb"));
+const lzutf8_1 = __importDefault(require("lzutf8"));
 const log = Logger_1.default.getInstance();
 const mazesDbFile = 'data/mazes.db';
 const scoresDbFile = 'data/scores.db';
 const teamsDbFile = 'data/teams.db';
+const ENABLE_COMPRESSION = true; // enables inline text compression
 var DATABASES;
 (function (DATABASES) {
     DATABASES[DATABASES["MAZES"] = 0] = "MAZES";
@@ -35,19 +37,19 @@ class LocalDAO {
     // must use getInstance()
     constructor() {
         log.info(__filename, '', util_1.format('%s %s', !file_exists_1.default.sync(scoresDbFile) ? 'Creating' : 'Loading', mazesDbFile));
-        this.dbMazes = new NeDB({ filename: mazesDbFile, autoload: true });
+        this.dbMazes = new nedb_1.default({ filename: mazesDbFile, autoload: true });
         this.dbMazes.ensureIndex({ fieldName: 'id', unique: true }, function (err) {
             if (err)
                 log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + mazesDbFile, err);
         });
         log.info(__filename, '', util_1.format('%s %s', !file_exists_1.default.sync(scoresDbFile) ? 'Creating' : 'Loading', scoresDbFile));
-        this.dbScores = new NeDB({ filename: scoresDbFile, autoload: true });
+        this.dbScores = new nedb_1.default({ filename: scoresDbFile, autoload: true });
         this.dbScores.ensureIndex({ fieldName: 'id', unique: true }, function (err) {
             if (err)
                 log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + scoresDbFile, err);
         });
         log.info(__filename, '', util_1.format('%s %s', !file_exists_1.default.sync(teamsDbFile) ? 'Creating' : 'Loading', teamsDbFile));
-        this.dbTeams = new NeDB({ filename: teamsDbFile, autoload: true });
+        this.dbTeams = new nedb_1.default({ filename: teamsDbFile, autoload: true });
         this.dbTeams.ensureIndex({ fieldName: 'id', unique: true }, function (err) {
             if (err)
                 log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + teamsDbFile, err);
@@ -60,11 +62,23 @@ class LocalDAO {
         }
         return LocalDAO.instance;
     }
+    compressObject(obj) {
+        return { id: obj.Id, docBody: lzutf8_1.default.compress(JSON.stringify(obj), { outputEncoding: 'StorageBinaryString' }) };
+    }
+    decompressDocument(doc) {
+        let dDoc = lzutf8_1.default.decompress(doc.docBody, { inputEncoding: 'StorageBinaryString' });
+        return JSON.parse(dDoc);
+        //return JSON.parse(lzutf8.decompress(doc['docBody']));
+    }
     insertDocument(targetDb, object, callback) {
         let fnName = 'insertDocument([DocID: ' + object.id + '])';
         let cbName = callback !== undefined ? callback.name : 'N/A';
         // set a database reference object
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
+        // compress the document for local DB storage
+        if (ENABLE_COMPRESSION)
+            object = this.compressObject(object);
+        // store the object
         tDb.insert(object, function (err, newDoc) {
             if (err)
                 throw err;
@@ -78,6 +92,9 @@ class LocalDAO {
         let cbName = callback !== undefined ? callback.name : 'N/A';
         // set a database reference object
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
+        // compress the document for local DB storage
+        if (ENABLE_COMPRESSION)
+            object = this.compressObject(object);
         // attempt to update the document with the given id
         tDb.update({ id: object.id }, object, {}, function (err, numReplaced) {
             if (err)
@@ -96,9 +113,11 @@ class LocalDAO {
         tDb.findOne({ id: objectId }, function (err, doc) {
             if (err)
                 throw err;
-            if (callback !== undefined)
-                callback(err, doc);
+            // decompress the document if found
+            if (doc && ENABLE_COMPRESSION)
+                doc = LocalDAO.getInstance().decompressDocument(doc);
             log.debug(__filename, fnName, util_1.format('[%s].%s completed. Callback to %s.', DATABASES[targetDb], objectId, cbName));
+            callback(err, doc);
         });
     }
     removeDocument(targetDb, objectId, callback) {
