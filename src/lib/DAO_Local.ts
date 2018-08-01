@@ -67,14 +67,15 @@ export class LocalDAO {
         return LocalDAO.instance;
     }
 
+    // compresses the object for storage, retaining the object.Id needed for retrieval
     private compressObject(obj: any): Object {
         return { id: obj.Id, docBody: lzutf8.compress(JSON.stringify(obj), { outputEncoding: 'StorageBinaryString' }) };
     }
 
+    // decompresses the document and reconstructs the JSON object from docBody
     private decompressDocument(doc: any): Object {
         let dDoc = lzutf8.decompress(doc.docBody, { inputEncoding: 'StorageBinaryString' });
         return JSON.parse(dDoc);
-        //return JSON.parse(lzutf8.decompress(doc['docBody']));
     }
 
     public insertDocument(targetDb: DATABASES, object: any, callback?: Function) {

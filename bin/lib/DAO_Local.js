@@ -62,13 +62,14 @@ class LocalDAO {
         }
         return LocalDAO.instance;
     }
+    // compresses the object for storage, retaining the object.Id needed for retrieval
     compressObject(obj) {
         return { id: obj.Id, docBody: lzutf8_1.default.compress(JSON.stringify(obj), { outputEncoding: 'StorageBinaryString' }) };
     }
+    // decompresses the document and reconstructs the JSON object from docBody
     decompressDocument(doc) {
         let dDoc = lzutf8_1.default.decompress(doc.docBody, { inputEncoding: 'StorageBinaryString' });
         return JSON.parse(dDoc);
-        //return JSON.parse(lzutf8.decompress(doc['docBody']));
     }
     insertDocument(targetDb, object, callback) {
         let fnName = 'insertDocument([DocID: ' + object.id + '])';
