@@ -1,6 +1,6 @@
 import { format } from 'util';
 import { Logger } from './Logger';
-import { DIRS, TAGS } from './Enumerations';
+import { DIRS, CELL_TAGS, CELL_TRAPS } from './Enumerations';
 import { Position } from './Position';
 import * as Helpers from './Helpers';
 
@@ -21,6 +21,7 @@ export default class Cell {
     private pos: Position;
     private exits: number;
     private tags: number;
+    private traps: number;
     private visits: number;
     private lastVisit: number;
     private notes: Array<string>;
@@ -30,6 +31,7 @@ export default class Cell {
             this.pos = data.pos;
             this.exits = data.exits;
             this.tags = data.tags;
+            this.traps = data.traps;
             this.visits = data.visits;
             this.lastVisit = data.lastVisit;
             this.notes = data.notes;
@@ -38,6 +40,7 @@ export default class Cell {
             this.pos = new Position(0, 0);
             this.exits = 0;
             this.tags = 0;
+            this.traps = 0;
             this.visits = 0;
             this.lastVisit = 0;
             this.notes = new Array<string>();
@@ -208,39 +211,52 @@ export default class Cell {
     }
 
     /**
+     * Returns the bitwise integer value representing cell traps
+     */
+    public getTraps(): number {
+        return this.traps;
+    }
+
+    /**
      * Returns list of string values representing cell tags
      */
     public listTags(): string {
-        return Helpers.listSelectedBitNames(TAGS, this.tags);
+        return Helpers.listSelectedBitNames(CELL_TAGS, this.tags);
     }
 
-    // removes all but the carved tag - used for removing traps from the solution path
-    public clearTags() {
-        let tags = TAGS.CARVED;
-        if (!!(this.tags & TAGS.START)) tags += TAGS.START;
-        if (!!(this.tags & TAGS.FINISH)) tags += TAGS.FINISH;
-        this.tags = tags;
+    /**
+     * Adds trap to this cell if no trap is already set
+     * @param trap
+     */
+    public setTrap(trap: CELL_TRAPS) {
+        let trapName = CELL_TRAPS[trap];
+        if (this.traps == 0) {
+            this.traps = trap;
+            log.debug(__filename, 'setTrap(' + trapName + ')', format('Trap %s set on cell [%d][%d].', trapName, this.pos.row, this.pos.col));
+        } else {
+            log.warn(__filename, 'setTrap(' + trapName + ')', format('Cell is already trapped: %s already set on [%d][%d].', trapName, this.pos.row, this.pos.col));
+        }
     }
 
     /**
      * Adds an Enums.Tag to this cell if it doesn't already exist
      * @param tag
      */
-    public addTag(tag: TAGS) {
-        let tagName = TAGS[tag];
+    public addTag(tag: CELL_TAGS) {
+        let tagName = CELL_TAGS[tag];
 
         if (!(this.tags & tag)) {
             this.tags += tag;
 
             switch (tag) {
-                case TAGS.START:
+                case CELL_TAGS.START:
                     // force north exit on start cell - do not use addExit() for this!
                     if (!(this.exits & DIRS.NORTH)) {
                         this.exits += DIRS.NORTH;
                         log.debug(__filename, 'addTag(' + tagName + ')', format('[%d][%d] has %s tag. Forcing NORTH exit through edge. Cell exits: %s', this.pos.row, this.pos.col, tagName, this.listExits()));
                     }
                     break;
-                case TAGS.FINISH:
+                case CELL_TAGS.FINISH:
                     // force north exit on finish cell - do not use addExit() for this!
                     if (!(this.exits & DIRS.SOUTH)) {
                         this.exits += DIRS.SOUTH;
@@ -258,8 +274,8 @@ export default class Cell {
      * Removes a tag from this cell, if it exists
      * @param tag
      */
-    public removeTag(tag: TAGS) {
-        let tagName = TAGS[tag];
+    public removeTag(tag: CELL_TAGS) {
+        let tagName = CELL_TAGS[tag];
         if (!!(this.tags & tag)) {
             this.tags -= tag;
             log.debug(__filename, 'removeTag(' + tagName + ')', format('Tag %s removed from cell [%d][%d]. Current tags: %s.', tagName, this.pos.row, this.pos.col, this.listTags()));

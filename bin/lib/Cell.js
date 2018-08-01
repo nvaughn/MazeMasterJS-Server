@@ -30,6 +30,7 @@ class Cell {
             this.pos = data.pos;
             this.exits = data.exits;
             this.tags = data.tags;
+            this.traps = data.traps;
             this.visits = data.visits;
             this.lastVisit = data.lastVisit;
             this.notes = data.notes;
@@ -39,6 +40,7 @@ class Cell {
             this.pos = new Position_1.Position(0, 0);
             this.exits = 0;
             this.tags = 0;
+            this.traps = 0;
             this.visits = 0;
             this.lastVisit = 0;
             this.notes = new Array();
@@ -184,37 +186,48 @@ class Cell {
         return this.tags;
     }
     /**
+     * Returns the bitwise integer value representing cell traps
+     */
+    getTraps() {
+        return this.traps;
+    }
+    /**
      * Returns list of string values representing cell tags
      */
     listTags() {
-        return Helpers.listSelectedBitNames(Enumerations_1.TAGS, this.tags);
+        return Helpers.listSelectedBitNames(Enumerations_1.CELL_TAGS, this.tags);
     }
-    // removes all but the carved tag - used for removing traps from the solution path
-    clearTags() {
-        let tags = Enumerations_1.TAGS.CARVED;
-        if (!!(this.tags & Enumerations_1.TAGS.START))
-            tags += Enumerations_1.TAGS.START;
-        if (!!(this.tags & Enumerations_1.TAGS.FINISH))
-            tags += Enumerations_1.TAGS.FINISH;
-        this.tags = tags;
+    /**
+     * Adds trap to this cell if no trap is already set
+     * @param trap
+     */
+    setTrap(trap) {
+        let trapName = Enumerations_1.CELL_TRAPS[trap];
+        if (this.traps == 0) {
+            this.traps = trap;
+            log.debug(__filename, 'setTrap(' + trapName + ')', util_1.format('Trap %s set on cell [%d][%d].', trapName, this.pos.row, this.pos.col));
+        }
+        else {
+            log.warn(__filename, 'setTrap(' + trapName + ')', util_1.format('Cell is already trapped: %s already set on [%d][%d].', trapName, this.pos.row, this.pos.col));
+        }
     }
     /**
      * Adds an Enums.Tag to this cell if it doesn't already exist
      * @param tag
      */
     addTag(tag) {
-        let tagName = Enumerations_1.TAGS[tag];
+        let tagName = Enumerations_1.CELL_TAGS[tag];
         if (!(this.tags & tag)) {
             this.tags += tag;
             switch (tag) {
-                case Enumerations_1.TAGS.START:
+                case Enumerations_1.CELL_TAGS.START:
                     // force north exit on start cell - do not use addExit() for this!
                     if (!(this.exits & Enumerations_1.DIRS.NORTH)) {
                         this.exits += Enumerations_1.DIRS.NORTH;
                         log.debug(__filename, 'addTag(' + tagName + ')', util_1.format('[%d][%d] has %s tag. Forcing NORTH exit through edge. Cell exits: %s', this.pos.row, this.pos.col, tagName, this.listExits()));
                     }
                     break;
-                case Enumerations_1.TAGS.FINISH:
+                case Enumerations_1.CELL_TAGS.FINISH:
                     // force north exit on finish cell - do not use addExit() for this!
                     if (!(this.exits & Enumerations_1.DIRS.SOUTH)) {
                         this.exits += Enumerations_1.DIRS.SOUTH;
@@ -233,7 +246,7 @@ class Cell {
      * @param tag
      */
     removeTag(tag) {
-        let tagName = Enumerations_1.TAGS[tag];
+        let tagName = Enumerations_1.CELL_TAGS[tag];
         if (!!(this.tags & tag)) {
             this.tags -= tag;
             log.debug(__filename, 'removeTag(' + tagName + ')', util_1.format('Tag %s removed from cell [%d][%d]. Current tags: %s.', tagName, this.pos.row, this.pos.col, this.listTags()));

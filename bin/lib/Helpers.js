@@ -71,7 +71,7 @@ function generateDefaultMazes() {
     let mazeList = JSON.parse(fs_1.default.readFileSync(DEFAULT_MAZE_STUB_FILE, 'utf8'));
     let targetDb = DAO_Local_1.DATABASES.MAZES;
     let dao = DAO_Local_1.default.getInstance();
-    log.setLogLevel(Logger_1.LOG_LEVELS.INFO);
+    log.setLogLevel(Logger_1.LOG_LEVELS.DEBUG);
     for (let stub of mazeList.stubs) {
         let mazeId = util_1.format('%s:%s:%s:%s', stub.height, stub.width, stub.challenge, stub.seed);
         let doc = dao.getDocument(targetDb, mazeId, function cbGetMaze(err, doc) {
@@ -80,6 +80,7 @@ function generateDefaultMazes() {
                 let maze = new Maze_1.default();
                 maze.generate(stub.height, stub.width, stub.seed, stub.challenge);
                 dao.insertDocument(targetDb, maze);
+                console.log('\r\n' + maze.TextRender);
             }
             else {
                 log.warn(__filename, 'generateDefaultMazes()', util_1.format('Maze %s already exists in %s.', mazeId, DAO_Local_1.DATABASES[targetDb]));

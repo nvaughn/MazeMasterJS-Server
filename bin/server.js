@@ -9,7 +9,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = require("./lib/Logger");
 const DAO_Local_1 = require("./lib/DAO_Local");
-const Maze_1 = require("./lib/Maze");
 const helpers = __importStar(require("./lib/Helpers"));
 Logger_1.Logger;
 // set up logger
@@ -21,19 +20,6 @@ log.appInfo(__filename, '');
 const dao = DAO_Local_1.LocalDAO.getInstance();
 // start up the server
 startServer();
-//testBlock();
-// TODO: Remove - for testing only
-function testBlock() {
-    let maze = new Maze_1.Maze();
-    maze.generate(3, 3, 'test', 5);
-    dao.insertDocument(DAO_Local_1.DATABASES.MAZES, maze, function cbInsertTest(err, newDoc) {
-        console.log('Compressed and stored.');
-    });
-    dao.getDocument(DAO_Local_1.DATABASES.MAZES, maze.Id, function cbGetTest(err, doc) {
-        let m2 = new Maze_1.Maze(doc);
-        console.log(m2.TextRender);
-    });
-}
 /**
  * Starts up the express server
  */

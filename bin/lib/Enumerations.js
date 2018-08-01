@@ -53,20 +53,24 @@ var DIRS;
     DIRS[DIRS["EAST"] = 4] = "EAST";
     DIRS[DIRS["WEST"] = 8] = "WEST";
 })(DIRS = exports.DIRS || (exports.DIRS = {}));
-// Tags for cells, avatar, item, and other functions
-var TAGS;
-(function (TAGS) {
-    TAGS[TAGS["NONE"] = 0] = "NONE";
-    TAGS[TAGS["START"] = 1] = "START";
-    TAGS[TAGS["FINISH"] = 2] = "FINISH";
-    TAGS[TAGS["PATH"] = 4] = "PATH";
-    TAGS[TAGS["CARVED"] = 8] = "CARVED";
-    TAGS[TAGS["LAVA"] = 16] = "LAVA";
-    TAGS[TAGS["TRAP_PIT"] = 32] = "TRAP_PIT";
-    TAGS[TAGS["TRAP_BEARTRAP"] = 64] = "TRAP_BEARTRAP";
-    TAGS[TAGS["TRAP_TARPIT"] = 128] = "TRAP_TARPIT";
-    TAGS[TAGS["TRAP_FLAMETHOWER"] = 256] = "TRAP_FLAMETHOWER";
-})(TAGS = exports.TAGS || (exports.TAGS = {}));
+// CELL TAGS
+var CELL_TAGS;
+(function (CELL_TAGS) {
+    CELL_TAGS[CELL_TAGS["NONE"] = 0] = "NONE";
+    CELL_TAGS[CELL_TAGS["START"] = 1] = "START";
+    CELL_TAGS[CELL_TAGS["FINISH"] = 2] = "FINISH";
+    CELL_TAGS[CELL_TAGS["PATH"] = 4] = "PATH";
+    CELL_TAGS[CELL_TAGS["CARVED"] = 8] = "CARVED";
+    CELL_TAGS[CELL_TAGS["LAVA"] = 16] = "LAVA";
+})(CELL_TAGS = exports.CELL_TAGS || (exports.CELL_TAGS = {}));
+var CELL_TRAPS;
+(function (CELL_TRAPS) {
+    CELL_TRAPS[CELL_TRAPS["NONE"] = 0] = "NONE";
+    CELL_TRAPS[CELL_TRAPS["PIT"] = 1] = "PIT";
+    CELL_TRAPS[CELL_TRAPS["BEARTRAP"] = 2] = "BEARTRAP";
+    CELL_TRAPS[CELL_TRAPS["TARPIT"] = 4] = "TARPIT";
+    CELL_TRAPS[CELL_TRAPS["FLAMETHOWER"] = 8] = "FLAMETHOWER";
+})(CELL_TRAPS = exports.CELL_TRAPS || (exports.CELL_TRAPS = {}));
 // enumeration of possible game results
 var GAME_RESULTS;
 (function (GAME_RESULTS) {

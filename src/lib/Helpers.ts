@@ -65,7 +65,7 @@ export function generateDefaultMazes() {
     let targetDb = DATABASES.MAZES;
     let dao = LocalDAO.getInstance();
 
-    log.setLogLevel(LOG_LEVELS.INFO);
+    log.setLogLevel(LOG_LEVELS.DEBUG);
 
     for (let stub of mazeList.stubs) {
         let mazeId = fmt('%s:%s:%s:%s', stub.height, stub.width, stub.challenge, stub.seed);
@@ -75,6 +75,7 @@ export function generateDefaultMazes() {
                 let maze = new Maze();
                 maze.generate(stub.height, stub.width, stub.seed, stub.challenge);
                 dao.insertDocument(targetDb, maze);
+                console.log('\r\n' + maze.TextRender);
             } else {
                 log.warn(__filename, 'generateDefaultMazes()', fmt('Maze %s already exists in %s.', mazeId, DATABASES[targetDb]));
             }

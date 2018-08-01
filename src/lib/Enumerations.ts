@@ -51,18 +51,22 @@ export enum DIRS {
     WEST = 8
 }
 
-// Tags for cells, avatar, item, and other functions
-export enum TAGS {
+// CELL TAGS
+export enum CELL_TAGS {
     NONE = 0,
     START = 1,
     FINISH = 2,
     PATH = 4,
     CARVED = 8,
-    LAVA = 16,
-    TRAP_PIT = 32,
-    TRAP_BEARTRAP = 64,
-    TRAP_TARPIT = 128,
-    TRAP_FLAMETHOWER = 256
+    LAVA = 16
+}
+
+export enum CELL_TRAPS {
+    NONE = 0,
+    PIT = 1,
+    BEARTRAP = 2,
+    TARPIT = 4,
+    FLAMETHOWER = 8
 }
 
 // enumeration of possible game results

@@ -17,22 +17,6 @@ const dao = LocalDAO.getInstance();
 // start up the server
 startServer();
 
-//testBlock();
-
-// TODO: Remove - for testing only
-function testBlock() {
-    let maze: Maze = new Maze();
-    maze.generate(3, 3, 'test', 5);
-    dao.insertDocument(DATABASES.MAZES, maze, function cbInsertTest(err: Error, newDoc: any) {
-        console.log('Compressed and stored.');
-    });
-
-    dao.getDocument(DATABASES.MAZES, maze.Id, function cbGetTest(err: Error, doc: any) {
-        let m2 = new Maze(doc);
-        console.log(m2.TextRender);
-    });
-}
-
 /**
  * Starts up the express server
  */

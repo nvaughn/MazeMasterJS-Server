@@ -2,7 +2,7 @@ import Cell from './Cell';
 import seedrandom from 'seedrandom';
 import Logger from './Logger';
 import { Position } from './Position';
-import { DIRS, TAGS } from './Enumerations';
+import { DIRS, CELL_TAGS, CELL_TRAPS } from './Enumerations';
 import { format as fmt } from 'util';
 
 const log = Logger.getInstance();
@@ -170,10 +170,10 @@ export class Maze {
         // tag start and finish columns (start / finish tags force matching exits on edge)
         this.startCell = new Position(0, startCol);
 
-        this.cells[0][startCol].addTag(TAGS.START);
+        this.cells[0][startCol].addTag(CELL_TAGS.START);
 
         this.finishCell = new Position(height - 1, finishCol);
-        this.cells[height - 1][finishCol].addTag(TAGS.FINISH);
+        this.cells[height - 1][finishCol].addTag(CELL_TAGS.FINISH);
 
         // start the carving routine
         this.carvePassage(this.cells[0][0]);
@@ -226,9 +226,9 @@ export class Maze {
                 // if the next call has valid grid coordinates, get it and carve into it
                 if (ny >= 0 && ny < this.cells.length && nx >= 0 && nx < this.cells[0].length) {
                     let nextCell: Cell = this.cells[ny][nx];
-                    if (!(nextCell.getTags() & TAGS.CARVED) && cell.addExit(dirs[n], this.cells)) {
+                    if (!(nextCell.getTags() & CELL_TAGS.CARVED) && cell.addExit(dirs[n], this.cells)) {
                         // this is a good move, so mark the cell as carved
-                        nextCell.addTag(TAGS.CARVED);
+                        nextCell.addTag(CELL_TAGS.CARVED);
 
                         // and carve into the next cell
                         this.carvePassage(nextCell);
@@ -281,7 +281,7 @@ export class Maze {
                         case 0:
                             // only render north walls on first row
                             if (y == 0) {
-                                if (!!(cell.getTags() & TAGS.START)) {
+                                if (!!(cell.getTags() & CELL_TAGS.START)) {
                                     row += S_DOOR;
                                 } else {
                                     row += !!(cell.getExits() & DIRS.NORTH) ? H_DOOR : H_WALL;
@@ -297,17 +297,19 @@ export class Maze {
                             // render room center - check for cell properties and render appropriately
                             let cellFill = CENTER;
                             let tags = cell.getTags();
+                            let traps = cell.getTraps();
                             if (playerPos !== undefined && this.cells[y][x].getPos().equals(playerPos)) {
-                                if (!!(tags & TAGS.TRAP_BEARTRAP) || !!(tags & TAGS.TRAP_PIT) || !!(tags & TAGS.TRAP_FLAMETHOWER)) {
+                                if (traps != 0) {
                                     cellFill = AVATAR_TRAPPED;
                                 } else {
                                     cellFill = AVATAR;
                                 }
                             }
-                            if (!!(cell.getTags() & TAGS.PATH)) cellFill = SOLUTION;
-                            if (!!(cell.getTags() & TAGS.TRAP_BEARTRAP)) cellFill = '>b<';
-                            if (!!(cell.getTags() & TAGS.TRAP_PIT)) cellFill = '>p<';
-                            if (!!(cell.getTags() & TAGS.TRAP_FLAMETHOWER)) cellFill = '>f<';
+                            if (!!(tags & CELL_TAGS.PATH)) cellFill = SOLUTION;
+                            if (!!(traps & CELL_TRAPS.BEARTRAP)) cellFill = '>b<';
+                            if (!!(traps & CELL_TRAPS.PIT)) cellFill = '>p<';
+                            if (!!(traps & CELL_TRAPS.FLAMETHOWER)) cellFill = '>f<';
+                            if (!!(traps & CELL_TRAPS.TARPIT)) cellFill = '>t<';
                             row += cellFill;
 
                             // always render east walls (with room center)
@@ -316,7 +318,7 @@ export class Maze {
                             break;
                         case 2:
                             // always render south walls
-                            if (!!(cell.getTags() & TAGS.FINISH)) {
+                            if (!!(cell.getTags() & CELL_TAGS.FINISH)) {
                                 row += F_DOOR;
                             } else {
                                 row += !!(cell.getExits() & DIRS.SOUTH) ? H_DOOR : H_WALL;
@@ -393,10 +395,10 @@ export class Maze {
                 switch (dir) {
                     case DIRS.NORTH:
                         // start always has an exit on the north wall, but it's not usable
-                        if (!!(cell.getExits() & DIRS.NORTH) && !(cell.getTags() & TAGS.START)) nLoc.row -= 1;
+                        if (!!(cell.getExits() & DIRS.NORTH) && !(cell.getTags() & CELL_TAGS.START)) nLoc.row -= 1;
                         break;
                     case DIRS.SOUTH:
-                        if (!!(cell.getExits() & DIRS.SOUTH) && !(cell.getTags() & TAGS.FINISH)) nLoc.row += 1;
+                        if (!!(cell.getExits() & DIRS.SOUTH) && !(cell.getTags() & CELL_TAGS.FINISH)) nLoc.row += 1;
                         break;
                     case DIRS.EAST:
                         if (!!(cell.getExits() & DIRS.EAST)) nLoc.col += 1;
@@ -433,8 +435,7 @@ export class Maze {
             this.shortestPathLength++;
 
             // clear existing tags and add the path tag - traps come later
-            cell.clearTags();
-            cell.addTag(TAGS.PATH);
+            cell.addTag(CELL_TAGS.PATH);
         }
 
         recurseDepth--;
@@ -443,11 +444,11 @@ export class Maze {
 
     // test if cell has a trap
     private hasTrap(cell: Cell): boolean {
-        let tags = cell.getTags();
-        if (!!(tags & TAGS.TRAP_BEARTRAP)) return true;
-        if (!!(tags & TAGS.TRAP_PIT)) return true;
-        if (!!(tags & TAGS.TRAP_FLAMETHOWER)) return true;
-        if (!!(tags & TAGS.TRAP_TARPIT)) return true;
+        let traps = cell.getTraps();
+        if (!!(traps & CELL_TRAPS.BEARTRAP)) return true;
+        if (!!(traps & CELL_TRAPS.PIT)) return true;
+        if (!!(traps & CELL_TRAPS.FLAMETHOWER)) return true;
+        if (!!(traps & CELL_TRAPS.TARPIT)) return true;
         return false;
     }
 
@@ -464,7 +465,7 @@ export class Maze {
                 let exits = cell.getExits();
                 let trapAllowed = !!(exits & DIRS.NORTH) && !!(exits & DIRS.SOUTH); // north-south safe to jump
                 if (!trapAllowed) trapAllowed = !!(exits & DIRS.EAST) && !!(exits & DIRS.WEST); // not north-south save, but east-west safe to jump?
-                if (trapAllowed && this.challenge < MIN_TRAPS_ON_PATH_CHALLENGE_LEVEL) trapAllowed = !(cell.getTags() & TAGS.PATH); // No traps on solution path for easier mazes
+                if (trapAllowed && this.challenge < MIN_TRAPS_ON_PATH_CHALLENGE_LEVEL) trapAllowed = !(cell.getTags() & CELL_TAGS.PATH); // No traps on solution path for easier mazes
 
                 // now make sure that we don't double up on traps, making them not jumpable
                 if (trapAllowed && y > 0 && !!(exits & DIRS.NORTH)) trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, DIRS.NORTH));
@@ -482,12 +483,22 @@ export class Maze {
                         log.trace(__filename, 'addTraps()', fmt('trapNum=%s', trapNum));
                         switch (trapNum) {
                             case 1: {
-                                cell.addTag(TAGS.TRAP_PIT);
+                                cell.setTrap(CELL_TRAPS.PIT);
                                 trapCount++;
                                 break;
                             }
                             case 2: {
-                                cell.addTag(TAGS.TRAP_FLAMETHOWER);
+                                cell.setTrap(CELL_TRAPS.FLAMETHOWER);
+                                trapCount++;
+                                break;
+                            }
+                            case 3: {
+                                cell.setTrap(CELL_TRAPS.BEARTRAP);
+                                trapCount++;
+                                break;
+                            }
+                            case 4: {
+                                cell.setTrap(CELL_TRAPS.TARPIT);
                                 trapCount++;
                                 break;
                             }
