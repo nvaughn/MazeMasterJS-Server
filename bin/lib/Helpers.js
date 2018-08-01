@@ -80,7 +80,6 @@ function generateDefaultMazes() {
                 let maze = new Maze_1.default();
                 maze.generate(stub.height, stub.width, stub.seed, stub.challenge);
                 dao.insertDocument(targetDb, maze);
-                console.log(maze.TextRender);
             }
             else {
                 log.warn(__filename, 'generateDefaultMazes()', util_1.format('Maze %s already exists in %s.', mazeId, DAO_Local_1.DATABASES[targetDb]));

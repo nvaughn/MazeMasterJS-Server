@@ -16,7 +16,6 @@ import Logger from './Logger';
 import fileExists from 'file-exists';
 import { format as fmt } from 'util';
 import NeDB from 'nedb';
-import * as helpers from './Helpers';
 import lzutf8 from 'lzutf8';
 
 const log = Logger.getInstance();
@@ -24,7 +23,8 @@ const mazesDbFile = 'data/mazes.db';
 const scoresDbFile = 'data/scores.db';
 const teamsDbFile = 'data/teams.db';
 
-const ENABLE_COMPRESSION = true; // enables inline text compression
+const COMPRESSION_ENABLED = true; // enables inline text compression
+const COMPRESSION_ENCODING = 'Base64'; // Supported Options: Base64 (smallest and as fast as SBS), StorageBinaryString (small, fast, but unreadable), ByteArray (requires buffering)
 
 export enum DATABASES {
     MAZES = 0,
@@ -69,12 +69,12 @@ export class LocalDAO {
 
     // compresses the object for storage, retaining the object.Id needed for retrieval
     private compressObject(obj: any): Object {
-        return { id: obj.Id, docBody: lzutf8.compress(JSON.stringify(obj), { outputEncoding: 'StorageBinaryString' }) };
+        return { id: obj.Id, docBody: lzutf8.compress(JSON.stringify(obj), { outputEncoding: COMPRESSION_ENCODING }) };
     }
 
     // decompresses the document and reconstructs the JSON object from docBody
     private decompressDocument(doc: any): Object {
-        let dDoc = lzutf8.decompress(doc.docBody, { inputEncoding: 'StorageBinaryString' });
+        let dDoc = lzutf8.decompress(doc.docBody, { inputEncoding: COMPRESSION_ENCODING });
         return JSON.parse(dDoc);
     }
 
@@ -86,7 +86,7 @@ export class LocalDAO {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
 
         // compress the document for local DB storage
-        if (ENABLE_COMPRESSION) object = this.compressObject(object);
+        if (COMPRESSION_ENABLED) object = this.compressObject(object);
 
         // store the object
         tDb.insert(object, function(err, newDoc) {
@@ -104,7 +104,7 @@ export class LocalDAO {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
 
         // compress the document for local DB storage
-        if (ENABLE_COMPRESSION) object = this.compressObject(object);
+        if (COMPRESSION_ENABLED) object = this.compressObject(object);
 
         // attempt to update the document with the given id
         tDb.update({ id: object.id }, object, {}, function(err, numReplaced) {
@@ -126,7 +126,7 @@ export class LocalDAO {
             if (err) throw err;
 
             // decompress the document if found
-            if (doc && ENABLE_COMPRESSION) doc = LocalDAO.getInstance().decompressDocument(doc);
+            if (doc && COMPRESSION_ENABLED) doc = LocalDAO.getInstance().decompressDocument(doc);
 
             log.debug(__filename, fnName, fmt('[%s].%s completed. Callback to %s.', DATABASES[targetDb], objectId, cbName));
             callback(err, doc);

@@ -75,7 +75,6 @@ export function generateDefaultMazes() {
                 let maze = new Maze();
                 maze.generate(stub.height, stub.width, stub.seed, stub.challenge);
                 dao.insertDocument(targetDb, maze);
-                console.log(maze.TextRender);
             } else {
                 log.warn(__filename, 'generateDefaultMazes()', fmt('Maze %s already exists in %s.', mazeId, DATABASES[targetDb]));
             }
