@@ -4,6 +4,8 @@ import { DAO_NeDb } from './lib/DAO_NeDB';
 import * as helpers from './lib/Helpers';
 import express from 'express';
 import { DATABASES } from './lib/Enumerations';
+import * as mazeRouter from './routes/maze';
+const mazesRouter = express().router;
 
 // set up logger
 const log = Logger.getInstance();

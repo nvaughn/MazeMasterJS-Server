@@ -26,7 +26,7 @@ const log = Logger_1.default.getInstance();
 const mazesDbFile = 'data/mazes.db';
 const scoresDbFile = 'data/scores.db';
 const teamsDbFile = 'data/teams.db';
-const COMPRESSION_ENABLED = false; // enables inline text compression
+const COMPRESSION_ENABLED = true; // enables inline text compression
 const COMPRESSION_ENCODING = 'Base64'; // Supported Options: Base64 (smallest and as fast as SBS), StorageBinaryString (small, fast, but unreadable), ByteArray (requires buffering)
 class DAO_NeDb {
     // must use getInstance()

@@ -15,6 +15,7 @@ const DAO_NeDB_1 = require("./lib/DAO_NeDB");
 const helpers = __importStar(require("./lib/Helpers"));
 const express_1 = __importDefault(require("express"));
 const Enumerations_1 = require("./lib/Enumerations");
+const mazesRouter = express_1.default().router;
 // set up logger
 const log = Logger_1.Logger.getInstance();
 log.setLogLevel(Logger_1.LOG_LEVELS.DEBUG);
