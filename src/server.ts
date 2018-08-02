@@ -4,13 +4,15 @@ import { DataAccessObject_NeDB } from './lib/DAO_NeDB';
 import * as helpers from './lib/Helpers';
 import express from 'express';
 import { DATABASES } from './lib/Enums';
-import * as mazeRouter from './routes/maze';
-import * as defaultRouter from './routes/default';
+import { mazeRouter } from './routes/maze';
+import { defaultRouter } from './routes/default';
 
 // set up loggers
 const log = Logger.getInstance();
 log.setLogLevel(LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
+
+const HTTP_PORT = process.env.HTTP_PORT || 80;
 
 // set up express
 const app = express();
@@ -34,7 +36,12 @@ function startServer() {
         }
     });
 
-    //   app.listen()
+    app.use('/maze', mazeRouter);
+    app.use('/', defaultRouter);
+
+    app.listen(HTTP_PORT, () => {
+        log.info(__dirname, 'startServer()', 'MazeMasterJS HTTP Server Listening on Port ' + HTTP_PORT);
+    });
 }
 
 /**

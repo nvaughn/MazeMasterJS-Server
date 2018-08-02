@@ -3,11 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-//const routes = require('express').Router();
 const express_1 = __importDefault(require("express"));
-let router = express_1.default.Router();
-router.get('/', (req, res) => {
+exports.defaultRouter = express_1.default.Router();
+exports.defaultRouter.get('/', (req, res) => {
     res.status(200).json({ message: 'Default Route!' });
 });
-module.exports = router;
+exports.default = exports.defaultRouter;
 //# sourceMappingURL=default.js.map

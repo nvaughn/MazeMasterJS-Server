@@ -15,10 +15,13 @@ const DAO_NeDB_1 = require("./lib/DAO_NeDB");
 const helpers = __importStar(require("./lib/Helpers"));
 const express_1 = __importDefault(require("express"));
 const Enums_1 = require("./lib/Enums");
+const maze_1 = require("./routes/maze");
+const default_1 = require("./routes/default");
 // set up loggers
 const log = Logger_1.Logger.getInstance();
 log.setLogLevel(Logger_1.LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
+const HTTP_PORT = process.env.HTTP_PORT || 80;
 // set up express
 const app = express_1.default();
 // get data access object instance (local NeDB connector)
@@ -36,7 +39,11 @@ function startServer() {
             helpers.generateDefaultMazes();
         }
     });
-    //   app.listen()
+    app.use('/maze', maze_1.mazeRouter);
+    app.use('/', default_1.defaultRouter);
+    app.listen(HTTP_PORT, () => {
+        log.info(__dirname, 'startServer()', 'MazeMasterJS HTTP Server Listening on Port ' + HTTP_PORT);
+    });
 }
 /**
  * Watch for SIGINT (process interrupt signal) and trigger shutdown

@@ -1,8 +1,8 @@
 import express from 'express';
-let router = express.Router();
+export const mazeRouter = express.Router();
 
-router.get('/', (req, res) => {
+mazeRouter.get('/', (req, res) => {
     res.status(200).json({ message: 'Default Mazes Route!' });
 });
 
-module.exports = router;
+export default mazeRouter;

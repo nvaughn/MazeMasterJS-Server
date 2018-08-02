@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-let router = express_1.default.Router();
-router.get('/', (req, res) => {
+exports.mazeRouter = express_1.default.Router();
+exports.mazeRouter.get('/', (req, res) => {
     res.status(200).json({ message: 'Default Mazes Route!' });
 });
-module.exports = router;
+exports.default = exports.mazeRouter;
 //# sourceMappingURL=maze.js.map
