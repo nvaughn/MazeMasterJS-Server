@@ -1,6 +1,6 @@
-import { DATABASES } from './Enumerations';
+import { DATABASES } from './Enums';
 
-export interface DAO_Interface {
+export interface DataAccessObject {
     insertDocument(targetDb: DATABASES, object: any, callback?: Function): any;
     updateDocument(targetDb: DATABASES, object: any, callback?: Function): any;
     getDocument(targetDb: DATABASES, objectId: string, callback: Function): any;

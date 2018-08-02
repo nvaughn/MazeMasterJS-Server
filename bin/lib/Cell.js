@@ -9,7 +9,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("util");
 const Logger_1 = require("./Logger");
-const Enumerations_1 = require("./Enumerations");
+const Enums_1 = require("./Enums");
 const Position_1 = require("./Position");
 const Helpers = __importStar(require("./Helpers"));
 /**
@@ -67,7 +67,7 @@ class Cell {
         return this.exits;
     }
     listExits() {
-        return Helpers.listSelectedBitNames(Enumerations_1.DIRS, this.exits);
+        return Helpers.listSelectedBitNames(Enums_1.DIRS, this.exits);
     }
     /**
      * Adds exit to a cell if exit doesn't already exist.
@@ -97,14 +97,14 @@ class Cell {
      */
     reverseDir(dir) {
         switch (dir) {
-            case Enumerations_1.DIRS.NORTH:
-                return Enumerations_1.DIRS.SOUTH;
-            case Enumerations_1.DIRS.SOUTH:
-                return Enumerations_1.DIRS.NORTH;
-            case Enumerations_1.DIRS.EAST:
-                return Enumerations_1.DIRS.WEST;
-            case Enumerations_1.DIRS.WEST:
-                return Enumerations_1.DIRS.EAST;
+            case Enums_1.DIRS.NORTH:
+                return Enums_1.DIRS.SOUTH;
+            case Enums_1.DIRS.SOUTH:
+                return Enums_1.DIRS.NORTH;
+            case Enums_1.DIRS.EAST:
+                return Enums_1.DIRS.WEST;
+            case Enums_1.DIRS.WEST:
+                return Enums_1.DIRS.EAST;
             default:
                 return 0;
         }
@@ -121,25 +121,25 @@ class Cell {
      */
     setExit(mode, dir, cells) {
         let modeName = mode == FN_MODES.ADD ? 'ADD' : 'REMOVE';
-        let dirName = Enumerations_1.DIRS[dir];
+        let dirName = Enums_1.DIRS[dir];
         let validMove = true; // only set to true if valid adjoining cell exits to open an exit to
         log.trace(__filename, util_1.format('setExit(%s, %s)', modeName, dirName), util_1.format('Setting exits in cell [%d][%d]. Existing exits: %s.', this.pos.row, this.pos.col, this.listExits()));
         if (mode == FN_MODES.ADD ? !(this.exits & dir) : !!(this.exits & dir)) {
             let nPos = new Position_1.Position(-1, -1); // location adjoining cell - must open exit on both sides
             switch (dir) {
-                case Enumerations_1.DIRS.NORTH:
+                case Enums_1.DIRS.NORTH:
                     validMove = this.pos.row > 0;
                     nPos = new Position_1.Position(this.pos.row - 1, this.pos.col);
                     break;
-                case Enumerations_1.DIRS.SOUTH:
+                case Enums_1.DIRS.SOUTH:
                     validMove = this.pos.row < cells.length;
                     nPos = new Position_1.Position(this.pos.row + 1, this.pos.col);
                     break;
-                case Enumerations_1.DIRS.EAST:
+                case Enums_1.DIRS.EAST:
                     validMove = this.pos.col < cells[0].length;
                     nPos = new Position_1.Position(this.pos.row, this.pos.col + 1);
                     break;
-                case Enumerations_1.DIRS.WEST:
+                case Enums_1.DIRS.WEST:
                     validMove = this.pos.col > 0;
                     nPos = new Position_1.Position(this.pos.row, this.pos.col - 1);
                     break;
@@ -195,14 +195,14 @@ class Cell {
      * Returns list of string values representing cell tags
      */
     listTags() {
-        return Helpers.listSelectedBitNames(Enumerations_1.CELL_TAGS, this.tags);
+        return Helpers.listSelectedBitNames(Enums_1.CELL_TAGS, this.tags);
     }
     /**
      * Adds trap to this cell if no trap is already set
      * @param trap
      */
     setTrap(trap) {
-        let trapName = Enumerations_1.CELL_TRAPS[trap];
+        let trapName = Enums_1.CELL_TRAPS[trap];
         if (this.traps == 0) {
             this.traps = trap;
             log.debug(__filename, 'setTrap(' + trapName + ')', util_1.format('Trap %s set on cell [%d][%d].', trapName, this.pos.row, this.pos.col));
@@ -216,21 +216,21 @@ class Cell {
      * @param tag
      */
     addTag(tag) {
-        let tagName = Enumerations_1.CELL_TAGS[tag];
+        let tagName = Enums_1.CELL_TAGS[tag];
         if (!(this.tags & tag)) {
             this.tags += tag;
             switch (tag) {
-                case Enumerations_1.CELL_TAGS.START:
+                case Enums_1.CELL_TAGS.START:
                     // force north exit on start cell - do not use addExit() for this!
-                    if (!(this.exits & Enumerations_1.DIRS.NORTH)) {
-                        this.exits += Enumerations_1.DIRS.NORTH;
+                    if (!(this.exits & Enums_1.DIRS.NORTH)) {
+                        this.exits += Enums_1.DIRS.NORTH;
                         log.debug(__filename, 'addTag(' + tagName + ')', util_1.format('[%d][%d] has %s tag. Forcing NORTH exit through edge. Cell exits: %s', this.pos.row, this.pos.col, tagName, this.listExits()));
                     }
                     break;
-                case Enumerations_1.CELL_TAGS.FINISH:
+                case Enums_1.CELL_TAGS.FINISH:
                     // force north exit on finish cell - do not use addExit() for this!
-                    if (!(this.exits & Enumerations_1.DIRS.SOUTH)) {
-                        this.exits += Enumerations_1.DIRS.SOUTH;
+                    if (!(this.exits & Enums_1.DIRS.SOUTH)) {
+                        this.exits += Enums_1.DIRS.SOUTH;
                         log.debug(__filename, 'addTag(' + tagName + ')', util_1.format('[%d][%d] has %s tag. Forcing NORTH exit through edge. Cell exits: %s', this.pos.row, this.pos.col, tagName, this.listExits()));
                     }
                     break;
@@ -246,7 +246,7 @@ class Cell {
      * @param tag
      */
     removeTag(tag) {
-        let tagName = Enumerations_1.CELL_TAGS[tag];
+        let tagName = Enums_1.CELL_TAGS[tag];
         if (!!(this.tags & tag)) {
             this.tags -= tag;
             log.debug(__filename, 'removeTag(' + tagName + ')', util_1.format('Tag %s removed from cell [%d][%d]. Current tags: %s.', tagName, this.pos.row, this.pos.col, this.listTags()));

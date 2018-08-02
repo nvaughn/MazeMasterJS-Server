@@ -16,8 +16,8 @@ import fileExists from 'file-exists';
 import { format as fmt } from 'util';
 import NeDB from 'nedb';
 import lzutf8 from 'lzutf8';
-import { DATABASES } from './Enumerations';
-import { DAO_Interface } from './DAO_Interface';
+import { DATABASES } from './Enums';
+import { DataAccessObject } from './DAO_Interface';
 
 const log = Logger.getInstance();
 
@@ -28,8 +28,8 @@ const teamsDbFile = 'data/teams.db';
 const COMPRESSION_ENABLED = true; // enables inline text compression
 const COMPRESSION_ENCODING = 'Base64'; // Supported Options: Base64 (smallest and as fast as SBS), StorageBinaryString (small, fast, but unreadable), ByteArray (requires buffering)
 
-export class DAO_NeDb implements DAO_Interface {
-    private static instance: DAO_NeDb;
+export class DataAccessObject_NeDB implements DataAccessObject {
+    private static instance: DataAccessObject_NeDB;
     private dbMazes: NeDB;
     private dbScores: NeDB;
     private dbTeams: NeDB;
@@ -57,10 +57,10 @@ export class DAO_NeDb implements DAO_Interface {
 
     // singleton instance pattern
     static getInstance() {
-        if (!DAO_NeDb.instance) {
-            DAO_NeDb.instance = new DAO_NeDb();
+        if (!DataAccessObject_NeDB.instance) {
+            DataAccessObject_NeDB.instance = new DataAccessObject_NeDB();
         }
-        return DAO_NeDb.instance;
+        return DataAccessObject_NeDB.instance;
     }
 
     // compresses the object for storage, retaining the object.Id needed for retrieval
@@ -122,7 +122,7 @@ export class DAO_NeDb implements DAO_Interface {
             if (err) throw err;
 
             // decompress the document if found
-            if (doc && COMPRESSION_ENABLED) doc = DAO_NeDb.getInstance().decompressDocument(doc);
+            if (doc && COMPRESSION_ENABLED) doc = DataAccessObject_NeDB.getInstance().decompressDocument(doc);
 
             log.debug(__filename, fnName, fmt('[%s].%s completed. Callback to %s.', DATABASES[targetDb], objectId, cbName));
             callback(err, doc);
@@ -155,4 +155,4 @@ export class DAO_NeDb implements DAO_Interface {
     }
 }
 
-export default DAO_NeDb;
+export default DataAccessObject_NeDB;

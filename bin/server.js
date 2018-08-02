@@ -14,16 +14,15 @@ const Logger_1 = require("./lib/Logger");
 const DAO_NeDB_1 = require("./lib/DAO_NeDB");
 const helpers = __importStar(require("./lib/Helpers"));
 const express_1 = __importDefault(require("express"));
-const Enumerations_1 = require("./lib/Enumerations");
-const mazesRouter = express_1.default().router;
-// set up logger
+const Enums_1 = require("./lib/Enums");
+// set up loggers
 const log = Logger_1.Logger.getInstance();
 log.setLogLevel(Logger_1.LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
 // set up express
 const app = express_1.default();
 // get data access object instance (local NeDB connector)
-const dao = DAO_NeDB_1.DAO_NeDb.getInstance();
+const dao = DAO_NeDB_1.DataAccessObject_NeDB.getInstance();
 // Start the Server
 startServer();
 /**
@@ -31,12 +30,13 @@ startServer();
  */
 function startServer() {
     log.info(__filename, 'startServer()', 'Server started.');
-    dao.getDocumentCount(Enumerations_1.DATABASES.MAZES, function cbCountMazes(err, count) {
+    dao.getDocumentCount(Enums_1.DATABASES.MAZES, function cbCountMazes(err, count) {
         if (count == 0) {
             log.warn(__filename, 'startServer()', 'No maze documents found in the mazes database - generating default mazes now...');
             helpers.generateDefaultMazes();
         }
     });
+    //   app.listen()
 }
 /**
  * Watch for SIGINT (process interrupt signal) and trigger shutdown

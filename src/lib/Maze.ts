@@ -2,7 +2,7 @@ import Cell from './Cell';
 import seedrandom from 'seedrandom';
 import Logger from './Logger';
 import { Position } from './Position';
-import { DIRS, CELL_TAGS, CELL_TRAPS } from './Enumerations';
+import { DIRS, CELL_TAGS, CELL_TRAPS } from './Enums';
 import { format as fmt } from 'util';
 
 const log = Logger.getInstance();
@@ -130,12 +130,20 @@ export class Maze {
         this.width = width;
 
         if (this.height < MIN_MAZE_DIMENSION_SIZE || this.width < MIN_MAZE_DIMENSION_SIZE) {
-            throw new Error(fmt('MINIMUM MAZE DIMENSIONS (%dx%d) NOT MET! Please increase Height and/or Width and try again.', MIN_MAZE_DIMENSION_SIZE, MIN_MAZE_DIMENSION_SIZE));
+            throw new Error(
+                fmt(
+                    'MINIMUM MAZE DIMENSIONS (%dx%d) NOT MET! Please increase Height and/or Width and try again.',
+                    MIN_MAZE_DIMENSION_SIZE,
+                    MIN_MAZE_DIMENSION_SIZE
+                )
+            );
         }
 
         // check for size constraint
         if (height * width > MAX_CELL_COUNT) {
-            throw new Error(fmt('MAX CELL COUNT (%d) EXCEEDED!  %d*%d=%d - Please reduce Height and/or Width and try again.', MAX_CELL_COUNT, height, width, height * width));
+            throw new Error(
+                fmt('MAX CELL COUNT (%d) EXCEEDED!  %d*%d=%d - Please reduce Height and/or Width and try again.', MAX_CELL_COUNT, height, width, height * width)
+            );
         }
 
         // implement random seed
@@ -186,7 +194,15 @@ export class Maze {
         if (this.challenge >= MIN_TRAPS_CHALLENGE_LEVEL) {
             this.addTraps();
         } else {
-            log.debug(__filename, 'generate()', fmt('Maze Challenge Level (%s) is below the minimum CL allowing traps (%s). Skipping trap generation.', this.challenge, MIN_TRAPS_CHALLENGE_LEVEL));
+            log.debug(
+                __filename,
+                'generate()',
+                fmt(
+                    'Maze Challenge Level (%s) is below the minimum CL allowing traps (%s). Skipping trap generation.',
+                    this.challenge,
+                    MIN_TRAPS_CHALLENGE_LEVEL
+                )
+            );
         }
 
         // render the maze so the text rendering is set
@@ -242,7 +258,11 @@ export class Maze {
 
         // exiting the function relieves one level of recursion
         recurseDepth--;
-        log.trace(__filename, 'carvePassage()', fmt('Max Recursion: %d. Carve COMPLETED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col));
+        log.trace(
+            __filename,
+            'carvePassage()',
+            fmt('Max Recursion: %d. Carve COMPLETED for cell [%d][%d].', recurseDepth, cell.getPos().row, cell.getPos().col)
+        );
     }
 
     /**
@@ -413,9 +433,17 @@ export class Maze {
                     // update the path ID if moving into a new branch
                     if (moveMade) {
                         pathId++;
-                        log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Moving %s [NEW PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString()));
+                        log.trace(
+                            __filename,
+                            fmt('tagSolution(%s)', cellPos.toString()),
+                            fmt('R:%d P:%s -- Moving %s [NEW PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString())
+                        );
                     } else {
-                        log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Moving %s [CONTINUING PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString()));
+                        log.trace(
+                            __filename,
+                            fmt('tagSolution(%s)', cellPos.toString()),
+                            fmt('R:%d P:%s -- Moving %s [CONTINUING PATH] to cell %s.', recurseDepth, pathId, DIRS[dir], nLoc.toString())
+                        );
                     }
 
                     if (!playerPos.equals(this.finishCell)) this.tagSolution(nLoc, pathId);
@@ -426,12 +454,20 @@ export class Maze {
             });
 
             if (!moveMade) {
-                log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- DEAD_END: Cannot move from cell %s', recurseDepth, pathId, cell.getPos().toString()));
+                log.trace(
+                    __filename,
+                    fmt('tagSolution(%s)', cellPos.toString()),
+                    fmt('R:%d P:%s -- DEAD_END: Cannot move from cell %s', recurseDepth, pathId, cell.getPos().toString())
+                );
             }
         }
 
         if (playerPos.equals(this.finishCell)) {
-            log.trace(__filename, fmt('tagSolution(%s)', cellPos.toString()), fmt('R:%d P:%s -- Adding PATH tag to %s.', recurseDepth, pathId, cell.getPos().toString()));
+            log.trace(
+                __filename,
+                fmt('tagSolution(%s)', cellPos.toString()),
+                fmt('R:%d P:%s -- Adding PATH tag to %s.', recurseDepth, pathId, cell.getPos().toString())
+            );
             this.shortestPathLength++;
 
             // clear existing tags and add the path tag - traps come later

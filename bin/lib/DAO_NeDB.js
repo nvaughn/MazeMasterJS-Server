@@ -21,14 +21,14 @@ const file_exists_1 = __importDefault(require("file-exists"));
 const util_1 = require("util");
 const nedb_1 = __importDefault(require("nedb"));
 const lzutf8_1 = __importDefault(require("lzutf8"));
-const Enumerations_1 = require("./Enumerations");
+const Enums_1 = require("./Enums");
 const log = Logger_1.default.getInstance();
 const mazesDbFile = 'data/mazes.db';
 const scoresDbFile = 'data/scores.db';
 const teamsDbFile = 'data/teams.db';
 const COMPRESSION_ENABLED = true; // enables inline text compression
 const COMPRESSION_ENCODING = 'Base64'; // Supported Options: Base64 (smallest and as fast as SBS), StorageBinaryString (small, fast, but unreadable), ByteArray (requires buffering)
-class DAO_NeDb {
+class DataAccessObject_NeDB {
     // must use getInstance()
     constructor() {
         log.info(__filename, '', util_1.format('%s %s', !file_exists_1.default.sync(scoresDbFile) ? 'Creating' : 'Loading', mazesDbFile));
@@ -52,10 +52,10 @@ class DAO_NeDb {
     }
     // singleton instance pattern
     static getInstance() {
-        if (!DAO_NeDb.instance) {
-            DAO_NeDb.instance = new DAO_NeDb();
+        if (!DataAccessObject_NeDB.instance) {
+            DataAccessObject_NeDB.instance = new DataAccessObject_NeDB();
         }
-        return DAO_NeDb.instance;
+        return DataAccessObject_NeDB.instance;
     }
     // compresses the object for storage, retaining the object.Id needed for retrieval
     compressObject(obj) {
@@ -70,7 +70,7 @@ class DAO_NeDb {
         let fnName = 'insertDocument([DocID: ' + object.id + '])';
         let cbName = callback !== undefined ? callback.name : 'N/A';
         // set a database reference object
-        let tDb = targetDb == Enumerations_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enumerations_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
+        let tDb = targetDb == Enums_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enums_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
         // compress the document for local DB storage
         if (COMPRESSION_ENABLED)
             object = this.compressObject(object);
@@ -80,14 +80,14 @@ class DAO_NeDb {
                 throw err;
             if (callback !== undefined)
                 callback(err, newDoc);
-            log.debug(__filename, fnName, util_1.format('[%s].%s completed. Callback to %s.', Enumerations_1.DATABASES[targetDb], object.id, cbName));
+            log.debug(__filename, fnName, util_1.format('[%s].%s completed. Callback to %s.', Enums_1.DATABASES[targetDb], object.id, cbName));
         });
     }
     updateDocument(targetDb, object, callback) {
         let fnName = 'updateDocument([DocID: ' + object.id + '])';
         let cbName = callback !== undefined ? callback.name : 'N/A';
         // set a database reference object
-        let tDb = targetDb == Enumerations_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enumerations_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
+        let tDb = targetDb == Enums_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enums_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
         // compress the document for local DB storage
         if (COMPRESSION_ENABLED)
             object = this.compressObject(object);
@@ -97,50 +97,50 @@ class DAO_NeDb {
                 throw err;
             if (callback !== undefined)
                 callback(err, numReplaced);
-            log.debug(__filename, fnName, util_1.format('[%s].%s completed. %s documents updated. Callback to %s.', Enumerations_1.DATABASES[targetDb], object.id, numReplaced, cbName));
+            log.debug(__filename, fnName, util_1.format('[%s].%s completed. %s documents updated. Callback to %s.', Enums_1.DATABASES[targetDb], object.id, numReplaced, cbName));
         });
     }
     getDocument(targetDb, objectId, callback) {
         let fnName = 'getDocument([DocID: ' + objectId + '])';
         let cbName = callback !== undefined ? callback.name : 'N/A';
         // set a database reference object
-        let tDb = targetDb == Enumerations_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enumerations_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
+        let tDb = targetDb == Enums_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enums_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
         // find the first matching document
         tDb.findOne({ id: objectId }, function (err, doc) {
             if (err)
                 throw err;
             // decompress the document if found
             if (doc && COMPRESSION_ENABLED)
-                doc = DAO_NeDb.getInstance().decompressDocument(doc);
-            log.debug(__filename, fnName, util_1.format('[%s].%s completed. Callback to %s.', Enumerations_1.DATABASES[targetDb], objectId, cbName));
+                doc = DataAccessObject_NeDB.getInstance().decompressDocument(doc);
+            log.debug(__filename, fnName, util_1.format('[%s].%s completed. Callback to %s.', Enums_1.DATABASES[targetDb], objectId, cbName));
             callback(err, doc);
         });
     }
     removeDocument(targetDb, objectId, callback) {
         let fnName = 'removeDocument([DocID: ' + objectId + '])';
         let cbName = callback !== undefined ? callback.name : 'N/A';
-        log.debug(__filename, fnName, util_1.format('[%s].%s entered.', Enumerations_1.DATABASES[targetDb], objectId));
+        log.debug(__filename, fnName, util_1.format('[%s].%s entered.', Enums_1.DATABASES[targetDb], objectId));
         // set a database reference object
-        let tDb = targetDb == Enumerations_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enumerations_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
+        let tDb = targetDb == Enums_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enums_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
         // find the first matching document
         tDb.remove({ id: objectId }, function (err, numRemoved) {
             if (err)
                 throw err;
             if (callback !== undefined)
                 callback(err, numRemoved);
-            log.debug(__filename, fnName, util_1.format('[%s].%s completed. %s documents removed. Callback to %s.', Enumerations_1.DATABASES[targetDb], objectId, numRemoved, cbName));
+            log.debug(__filename, fnName, util_1.format('[%s].%s completed. %s documents removed. Callback to %s.', Enums_1.DATABASES[targetDb], objectId, numRemoved, cbName));
         });
     }
     getDocumentCount(targetDb, callback) {
-        let tDb = targetDb == Enumerations_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enumerations_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
+        let tDb = targetDb == Enums_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enums_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
         tDb.count({}, function (err, n) {
             if (err)
                 throw err;
-            log.debug(__filename, 'getDocumentCount()', util_1.format('[%s] %s docs found. Callback: %s.', Enumerations_1.DATABASES[targetDb], n, callback.name));
+            log.debug(__filename, 'getDocumentCount()', util_1.format('[%s] %s docs found. Callback: %s.', Enums_1.DATABASES[targetDb], n, callback.name));
             callback(err, n);
         });
     }
 }
-exports.DAO_NeDb = DAO_NeDb;
-exports.default = DAO_NeDb;
+exports.DataAccessObject_NeDB = DataAccessObject_NeDB;
+exports.default = DataAccessObject_NeDB;
 //# sourceMappingURL=DAO_NeDB.js.map

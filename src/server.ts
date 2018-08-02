@@ -1,13 +1,13 @@
 import { format as fmt } from 'util';
 import { Logger, LOG_LEVELS } from './lib/Logger';
-import { DAO_NeDb } from './lib/DAO_NeDB';
+import { DataAccessObject_NeDB } from './lib/DAO_NeDB';
 import * as helpers from './lib/Helpers';
 import express from 'express';
-import { DATABASES } from './lib/Enumerations';
+import { DATABASES } from './lib/Enums';
 import * as mazeRouter from './routes/maze';
-const mazesRouter = express().router;
+import * as defaultRouter from './routes/default';
 
-// set up logger
+// set up loggers
 const log = Logger.getInstance();
 log.setLogLevel(LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
@@ -16,7 +16,7 @@ log.appInfo(__filename, '');
 const app = express();
 
 // get data access object instance (local NeDB connector)
-const dao = DAO_NeDb.getInstance();
+const dao = DataAccessObject_NeDB.getInstance();
 
 // Start the Server
 startServer();
@@ -33,6 +33,8 @@ function startServer() {
             helpers.generateDefaultMazes();
         }
     });
+
+    //   app.listen()
 }
 
 /**

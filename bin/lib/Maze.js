@@ -7,7 +7,7 @@ const Cell_1 = __importDefault(require("./Cell"));
 const seedrandom_1 = __importDefault(require("seedrandom"));
 const Logger_1 = __importDefault(require("./Logger"));
 const Position_1 = require("./Position");
-const Enumerations_1 = require("./Enumerations");
+const Enums_1 = require("./Enums");
 const util_1 = require("util");
 const log = Logger_1.default.getInstance();
 const MAX_CELL_COUNT = 2500; // control max maze size to prevent overflow due to recursion errors
@@ -80,10 +80,10 @@ class Maze {
         let row = cell.getPos().row;
         let col = cell.getPos().col;
         // find coordinates of the cell in the given direction
-        if (dir < Enumerations_1.DIRS.EAST)
-            row = dir == Enumerations_1.DIRS.NORTH ? row - 1 : row + 1;
-        if (dir > Enumerations_1.DIRS.SOUTH)
-            col = dir == Enumerations_1.DIRS.EAST ? col + 1 : col - 1;
+        if (dir < Enums_1.DIRS.EAST)
+            row = dir == Enums_1.DIRS.NORTH ? row - 1 : row + 1;
+        if (dir > Enums_1.DIRS.SOUTH)
+            col = dir == Enums_1.DIRS.EAST ? col + 1 : col - 1;
         return this.getCell(new Position_1.Position(row, col));
     }
     /**
@@ -142,9 +142,9 @@ class Maze {
         log.debug(__filename, 'generate()', util_1.format('Adding START ([%d][%d]) and FINISH ([%d][%d]) cells.', 0, startCol, height - 1, finishCol));
         // tag start and finish columns (start / finish tags force matching exits on edge)
         this.startCell = new Position_1.Position(0, startCol);
-        this.cells[0][startCol].addTag(Enumerations_1.CELL_TAGS.START);
+        this.cells[0][startCol].addTag(Enums_1.CELL_TAGS.START);
         this.finishCell = new Position_1.Position(height - 1, finishCol);
-        this.cells[height - 1][finishCol].addTag(Enumerations_1.CELL_TAGS.FINISH);
+        this.cells[height - 1][finishCol].addTag(Enums_1.CELL_TAGS.FINISH);
         // start the carving routine
         this.carvePassage(this.cells[0][0]);
         // now solve the maze and tag the path
@@ -182,17 +182,17 @@ class Maze {
             let ny = cell.getPos().row;
             let nx = cell.getPos().col;
             // move location of next cell according to random direction
-            if (dirs[n] < Enumerations_1.DIRS.EAST)
-                ny = dirs[n] == Enumerations_1.DIRS.NORTH ? ny - 1 : ny + 1;
-            if (dirs[n] > Enumerations_1.DIRS.SOUTH)
-                nx = dirs[n] == Enumerations_1.DIRS.EAST ? nx + 1 : nx - 1;
+            if (dirs[n] < Enums_1.DIRS.EAST)
+                ny = dirs[n] == Enums_1.DIRS.NORTH ? ny - 1 : ny + 1;
+            if (dirs[n] > Enums_1.DIRS.SOUTH)
+                nx = dirs[n] == Enums_1.DIRS.EAST ? nx + 1 : nx - 1;
             try {
                 // if the next call has valid grid coordinates, get it and carve into it
                 if (ny >= 0 && ny < this.cells.length && nx >= 0 && nx < this.cells[0].length) {
                     let nextCell = this.cells[ny][nx];
-                    if (!(nextCell.getTags() & Enumerations_1.CELL_TAGS.CARVED) && cell.addExit(dirs[n], this.cells)) {
+                    if (!(nextCell.getTags() & Enums_1.CELL_TAGS.CARVED) && cell.addExit(dirs[n], this.cells)) {
                         // this is a good move, so mark the cell as carved
-                        nextCell.addTag(Enumerations_1.CELL_TAGS.CARVED);
+                        nextCell.addTag(Enums_1.CELL_TAGS.CARVED);
                         // and carve into the next cell
                         this.carvePassage(nextCell);
                     }
@@ -239,18 +239,18 @@ class Maze {
                         case 0:
                             // only render north walls on first row
                             if (y == 0) {
-                                if (!!(cell.getTags() & Enumerations_1.CELL_TAGS.START)) {
+                                if (!!(cell.getTags() & Enums_1.CELL_TAGS.START)) {
                                     row += S_DOOR;
                                 }
                                 else {
-                                    row += !!(cell.getExits() & Enumerations_1.DIRS.NORTH) ? H_DOOR : H_WALL;
+                                    row += !!(cell.getExits() & Enums_1.DIRS.NORTH) ? H_DOOR : H_WALL;
                                 }
                             }
                             break;
                         case 1:
                             // only render west walls on first column
                             if (x == 0) {
-                                row += !!(cell.getExits() & Enumerations_1.DIRS.WEST) ? V_DOOR : V_WALL;
+                                row += !!(cell.getExits() & Enums_1.DIRS.WEST) ? V_DOOR : V_WALL;
                             }
                             // render room center - check for cell properties and render appropriately
                             let cellFill = CENTER;
@@ -264,27 +264,27 @@ class Maze {
                                     cellFill = AVATAR;
                                 }
                             }
-                            if (!!(tags & Enumerations_1.CELL_TAGS.PATH))
+                            if (!!(tags & Enums_1.CELL_TAGS.PATH))
                                 cellFill = SOLUTION;
-                            if (!!(traps & Enumerations_1.CELL_TRAPS.BEARTRAP))
+                            if (!!(traps & Enums_1.CELL_TRAPS.BEARTRAP))
                                 cellFill = '>b<';
-                            if (!!(traps & Enumerations_1.CELL_TRAPS.PIT))
+                            if (!!(traps & Enums_1.CELL_TRAPS.PIT))
                                 cellFill = '>p<';
-                            if (!!(traps & Enumerations_1.CELL_TRAPS.FLAMETHOWER))
+                            if (!!(traps & Enums_1.CELL_TRAPS.FLAMETHOWER))
                                 cellFill = '>f<';
-                            if (!!(traps & Enumerations_1.CELL_TRAPS.TARPIT))
+                            if (!!(traps & Enums_1.CELL_TRAPS.TARPIT))
                                 cellFill = '>t<';
                             row += cellFill;
                             // always render east walls (with room center)
-                            row += !!(cell.getExits() & Enumerations_1.DIRS.EAST) ? V_DOOR : V_WALL;
+                            row += !!(cell.getExits() & Enums_1.DIRS.EAST) ? V_DOOR : V_WALL;
                             break;
                         case 2:
                             // always render south walls
-                            if (!!(cell.getTags() & Enumerations_1.CELL_TAGS.FINISH)) {
+                            if (!!(cell.getTags() & Enums_1.CELL_TAGS.FINISH)) {
                                 row += F_DOOR;
                             }
                             else {
-                                row += !!(cell.getExits() & Enumerations_1.DIRS.SOUTH) ? H_DOOR : H_WALL;
+                                row += !!(cell.getExits() & Enums_1.DIRS.SOUTH) ? H_DOOR : H_WALL;
                             }
                             break;
                     }
@@ -334,7 +334,7 @@ class Maze {
         // add the cell to the list of explored cells
         solutionPath.push(cell.getPos().toString());
         // helpful vars
-        let dirs = [Enumerations_1.DIRS.NORTH, Enumerations_1.DIRS.SOUTH, Enumerations_1.DIRS.EAST, Enumerations_1.DIRS.WEST];
+        let dirs = [Enums_1.DIRS.NORTH, Enums_1.DIRS.SOUTH, Enums_1.DIRS.EAST, Enums_1.DIRS.WEST];
         let moveMade = false;
         if (playerPos.equals(this.finishCell)) {
             log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- WINNING PATH!', recurseDepth, pathId));
@@ -347,21 +347,21 @@ class Maze {
                 let cLoc = cell.getPos(); // current position
                 let nLoc = new Position_1.Position(cLoc.row, cLoc.col); // next position
                 switch (dir) {
-                    case Enumerations_1.DIRS.NORTH:
+                    case Enums_1.DIRS.NORTH:
                         // start always has an exit on the north wall, but it's not usable
-                        if (!!(cell.getExits() & Enumerations_1.DIRS.NORTH) && !(cell.getTags() & Enumerations_1.CELL_TAGS.START))
+                        if (!!(cell.getExits() & Enums_1.DIRS.NORTH) && !(cell.getTags() & Enums_1.CELL_TAGS.START))
                             nLoc.row -= 1;
                         break;
-                    case Enumerations_1.DIRS.SOUTH:
-                        if (!!(cell.getExits() & Enumerations_1.DIRS.SOUTH) && !(cell.getTags() & Enumerations_1.CELL_TAGS.FINISH))
+                    case Enums_1.DIRS.SOUTH:
+                        if (!!(cell.getExits() & Enums_1.DIRS.SOUTH) && !(cell.getTags() & Enums_1.CELL_TAGS.FINISH))
                             nLoc.row += 1;
                         break;
-                    case Enumerations_1.DIRS.EAST:
-                        if (!!(cell.getExits() & Enumerations_1.DIRS.EAST))
+                    case Enums_1.DIRS.EAST:
+                        if (!!(cell.getExits() & Enums_1.DIRS.EAST))
                             nLoc.col += 1;
                         break;
-                    case Enumerations_1.DIRS.WEST:
-                        if (!!(cell.getExits() & Enumerations_1.DIRS.WEST))
+                    case Enums_1.DIRS.WEST:
+                        if (!!(cell.getExits() & Enums_1.DIRS.WEST))
                             nLoc.col -= 1;
                         break;
                 }
@@ -370,10 +370,10 @@ class Maze {
                     // update the path ID if moving into a new branch
                     if (moveMade) {
                         pathId++;
-                        log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Moving %s [NEW PATH] to cell %s.', recurseDepth, pathId, Enumerations_1.DIRS[dir], nLoc.toString()));
+                        log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Moving %s [NEW PATH] to cell %s.', recurseDepth, pathId, Enums_1.DIRS[dir], nLoc.toString()));
                     }
                     else {
-                        log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Moving %s [CONTINUING PATH] to cell %s.', recurseDepth, pathId, Enumerations_1.DIRS[dir], nLoc.toString()));
+                        log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Moving %s [CONTINUING PATH] to cell %s.', recurseDepth, pathId, Enums_1.DIRS[dir], nLoc.toString()));
                     }
                     if (!playerPos.equals(this.finishCell))
                         this.tagSolution(nLoc, pathId);
@@ -389,7 +389,7 @@ class Maze {
             log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Adding PATH tag to %s.', recurseDepth, pathId, cell.getPos().toString()));
             this.shortestPathLength++;
             // clear existing tags and add the path tag - traps come later
-            cell.addTag(Enumerations_1.CELL_TAGS.PATH);
+            cell.addTag(Enums_1.CELL_TAGS.PATH);
         }
         recurseDepth--;
         log.trace(__filename, util_1.format('tagSolution(%s)', cellPos.toString()), util_1.format('R:%d P:%s -- Path complete.', recurseDepth, pathId));
@@ -397,13 +397,13 @@ class Maze {
     // test if cell has a trap
     hasTrap(cell) {
         let traps = cell.getTraps();
-        if (!!(traps & Enumerations_1.CELL_TRAPS.BEARTRAP))
+        if (!!(traps & Enums_1.CELL_TRAPS.BEARTRAP))
             return true;
-        if (!!(traps & Enumerations_1.CELL_TRAPS.PIT))
+        if (!!(traps & Enums_1.CELL_TRAPS.PIT))
             return true;
-        if (!!(traps & Enumerations_1.CELL_TRAPS.FLAMETHOWER))
+        if (!!(traps & Enums_1.CELL_TRAPS.FLAMETHOWER))
             return true;
-        if (!!(traps & Enumerations_1.CELL_TRAPS.TARPIT))
+        if (!!(traps & Enums_1.CELL_TRAPS.TARPIT))
             return true;
         return false;
     }
@@ -416,20 +416,20 @@ class Maze {
                 // traps only allowed if there are open cells on either side to allow jumping
                 // traps on the solution path will be removed when solution is
                 let exits = cell.getExits();
-                let trapAllowed = !!(exits & Enumerations_1.DIRS.NORTH) && !!(exits & Enumerations_1.DIRS.SOUTH); // north-south safe to jump
+                let trapAllowed = !!(exits & Enums_1.DIRS.NORTH) && !!(exits & Enums_1.DIRS.SOUTH); // north-south safe to jump
                 if (!trapAllowed)
-                    trapAllowed = !!(exits & Enumerations_1.DIRS.EAST) && !!(exits & Enumerations_1.DIRS.WEST); // not north-south save, but east-west safe to jump?
+                    trapAllowed = !!(exits & Enums_1.DIRS.EAST) && !!(exits & Enums_1.DIRS.WEST); // not north-south save, but east-west safe to jump?
                 if (trapAllowed && this.challenge < MIN_TRAPS_ON_PATH_CHALLENGE_LEVEL)
-                    trapAllowed = !(cell.getTags() & Enumerations_1.CELL_TAGS.PATH); // No traps on solution path for easier mazes
+                    trapAllowed = !(cell.getTags() & Enums_1.CELL_TAGS.PATH); // No traps on solution path for easier mazes
                 // now make sure that we don't double up on traps, making them not jumpable
-                if (trapAllowed && y > 0 && !!(exits & Enumerations_1.DIRS.NORTH))
-                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enumerations_1.DIRS.NORTH));
-                if (trapAllowed && y < this.height - 1 && !!(exits & Enumerations_1.DIRS.SOUTH))
-                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enumerations_1.DIRS.SOUTH));
-                if (trapAllowed && x < this.width - 1 && !!(exits & Enumerations_1.DIRS.EAST))
-                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enumerations_1.DIRS.EAST));
-                if (trapAllowed && x > 0 && !!(exits & Enumerations_1.DIRS.WEST))
-                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enumerations_1.DIRS.WEST));
+                if (trapAllowed && y > 0 && !!(exits & Enums_1.DIRS.NORTH))
+                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enums_1.DIRS.NORTH));
+                if (trapAllowed && y < this.height - 1 && !!(exits & Enums_1.DIRS.SOUTH))
+                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enums_1.DIRS.SOUTH));
+                if (trapAllowed && x < this.width - 1 && !!(exits & Enums_1.DIRS.EAST))
+                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enums_1.DIRS.EAST));
+                if (trapAllowed && x > 0 && !!(exits & Enums_1.DIRS.WEST))
+                    trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enums_1.DIRS.WEST));
                 // all is well - let's roll the die a few times to see if we get a trap
                 if (trapAllowed) {
                     let trapTries = Math.floor(this.challenge / 4);
@@ -439,22 +439,22 @@ class Maze {
                         log.trace(__filename, 'addTraps()', util_1.format('trapNum=%s', trapNum));
                         switch (trapNum) {
                             case 1: {
-                                cell.setTrap(Enumerations_1.CELL_TRAPS.PIT);
+                                cell.setTrap(Enums_1.CELL_TRAPS.PIT);
                                 trapCount++;
                                 break;
                             }
                             case 2: {
-                                cell.setTrap(Enumerations_1.CELL_TRAPS.FLAMETHOWER);
+                                cell.setTrap(Enums_1.CELL_TRAPS.FLAMETHOWER);
                                 trapCount++;
                                 break;
                             }
                             case 3: {
-                                cell.setTrap(Enumerations_1.CELL_TRAPS.BEARTRAP);
+                                cell.setTrap(Enums_1.CELL_TRAPS.BEARTRAP);
                                 trapCount++;
                                 break;
                             }
                             case 4: {
-                                cell.setTrap(Enumerations_1.CELL_TRAPS.TARPIT);
+                                cell.setTrap(Enums_1.CELL_TRAPS.TARPIT);
                                 trapCount++;
                                 break;
                             }
