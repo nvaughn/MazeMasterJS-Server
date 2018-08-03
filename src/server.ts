@@ -1,3 +1,4 @@
+require ('dotenv').config();
 import { format as fmt } from 'util';
 import { Logger, LOG_LEVELS } from './lib/Logger';
 import { DataAccessObject_NeDB } from './lib/DAO_NeDB';
