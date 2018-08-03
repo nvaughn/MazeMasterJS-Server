@@ -149,10 +149,10 @@ export class DataAccessObject_NeDB implements DataAccessObject {
 
     public getDocumentCount(targetDb: DATABASES, callback: Function) {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
-        tDb.count({}, function(err: Error, n: number) {
+        tDb.count({}, function(err: Error, count: number) {
             if (err) throw err;
-            log.debug(__filename, 'getDocumentCount()', fmt('[%s] %s docs found. Callback: %s.', DATABASES[targetDb], n, callback.name));
-            callback(err, n);
+            log.debug(__filename, 'getDocumentCount()', fmt('[%s] %s docs found. Callback: %s.', DATABASES[targetDb], count, callback.name));
+            callback(err, count);
         });
     }
 }

@@ -28,82 +28,54 @@ class DataAccessObject_lowdb {
         return DataAccessObject_lowdb.instance;
     }
     insertDocument(targetDb, object, callback) {
-        let err;
-        try {
+        log.debug(__filename, 'insertDocument(' + object.Id + ')', 'Inserting...');
+        let doc = this.getDocument(targetDb, object.Id);
+        if (!doc) {
             db.get(Enums_1.DATABASES[targetDb])
                 .push(object)
                 .write();
         }
-        catch (error) {
-            err = error;
-        }
-        callback(err, object);
+        callback();
     }
-    updateDocument(targetDb, object, callback) {
-        let err;
-        try {
-            db.get(Enums_1.DATABASES[targetDb])
-                .find({ id: object.Id })
-                .assign({ object })
-                .write();
-        }
-        catch (error) {
-            err = error;
-        }
-        callback(err, 1);
+    updateDocument(targetDb, object) {
+        let tDb = db.get(Enums_1.DATABASES[targetDb]);
+        tDb.find({ id: object.Id })
+            .assign({ object })
+            .write();
+        return this.getDocument(targetDb, object.Id);
     }
-    getDocument(targetDb, objectId, callback) {
-        let err;
-        let doc;
+    getDocument(targetDb, objectId) {
         log.debug(__filename, 'getDocument(' + objectId + ')', 'Searching...');
-        try {
-            doc = db
-                .get(Enums_1.DATABASES[targetDb])
-                .filter({ id: objectId })
-                .value();
-            console.log('found: %s', doc.Mazes);
-        }
-        catch (error) {
-            err = error;
-        }
-        callback(err, doc.Maze);
+        let doc = db
+            .get(Enums_1.DATABASES[targetDb])
+            .filter({ id: objectId })
+            .value();
+        log.debug(__filename, 'getDocument(' + objectId + ')', 'Found ' + JSON.stringify(doc));
+        return doc;
     }
-    removeDocument(targetDb, objectId, callback) {
-        let err;
-        let numRemoved = 0;
-        try {
-            numRemoved = db
-                .get(Enums_1.DATABASES[targetDb])
-                .size()
-                .value();
-            db.get(Enums_1.DATABASES[targetDb])
-                .remove({ id: objectId })
-                .write();
-            numRemoved =
-                numRemoved -
-                    db
-                        .get(Enums_1.DATABASES[targetDb])
-                        .size()
-                        .value();
-        }
-        catch (error) {
-            err = error;
-        }
-        callback(err, numRemoved);
+    removeDocument(targetDb, objectId) {
+        let tDb = db.get(Enums_1.DATABASES[targetDb]);
+        let numRemoved = tDb
+            .get(Enums_1.DATABASES[targetDb])
+            .size()
+            .value();
+        tDb.get(Enums_1.DATABASES[targetDb])
+            .remove({ id: objectId })
+            .write();
+        numRemoved =
+            numRemoved -
+                tDb
+                    .get(Enums_1.DATABASES[targetDb])
+                    .size()
+                    .value();
+        return numRemoved;
     }
-    getDocumentCount(targetDb, callback) {
-        let err;
-        let count = 0;
-        try {
-            count = db
-                .get(Enums_1.DATABASES[targetDb])
-                .size()
-                .value();
-        }
-        catch (error) {
-            err = error;
-        }
-        callback(err, count);
+    getDocumentCount(targetDb) {
+        let tDb = db.get(Enums_1.DATABASES[targetDb]);
+        return tDb
+            .get(Enums_1.DATABASES[targetDb])
+            .size()
+            .value();
     }
 }
 exports.DataAccessObject_lowdb = DataAccessObject_lowdb;

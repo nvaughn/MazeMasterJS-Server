@@ -7,8 +7,7 @@ import {format as fmt} from 'util';
 import {Logger, LOG_LEVELS} from './Logger';
 import Maze from './Maze';
 import {DATABASES} from './Enums';
-//import {DataAccessObject_NeDB} from './DAO_NeDB';
-import {DataAccessObject_lowdb} from '../lib/DAO_lowdb';
+import {DataAccessObject_NeDB} from './DAO_NeDB';
 
 // static class instances
 const log = Logger.getInstance();
@@ -66,8 +65,7 @@ export function getSelectedBitNames(bitwiseEnum: Object, selectedBits: number): 
 export function generateDefaultMazes() {
     let mazeList = JSON.parse(fs.readFileSync(DEFAULT_MAZE_STUB_FILE, 'utf8'));
     let targetDb = DATABASES.MAZES;
-    //let dao = DataAccessObject_NeDB.getInstance();
-    let dao: DataAccessObject_lowdb = DataAccessObject_lowdb.getInstance();
+    let dao = DataAccessObject_NeDB.getInstance();
 
     log.setLogLevel(LOG_LEVELS.DEBUG);
 

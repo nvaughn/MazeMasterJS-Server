@@ -5,11 +5,9 @@ import {DATABASES} from '../lib/Enums';
 import {LOG_LEVELS, Logger} from '../lib/Logger';
 import {Maze} from '../lib/Maze';
 import Position from '../lib/Position';
-import {DataAccessObject_lowdb} from '../lib/DAO_lowdb';
 
 // static class instances
-//const dao: DataAccessObject_NeDB = DataAccessObject_NeDB.getInstance();
-const dao: DataAccessObject_lowdb = DataAccessObject_lowdb.getInstance();
+const dao: DataAccessObject_NeDB = DataAccessObject_NeDB.getInstance();
 const log: Logger = Logger.getInstance();
 log.setLogLevel(LOG_LEVELS.WARN);
 
@@ -105,12 +103,12 @@ describe('DAO_Local', () => {
             });
         });
     });
-    // describe('removeDocument(maze)', () => {
-    //     it('numRemoved should be 1', (done) => {
-    //         dao.removeDocument(DATABASES.MAZES, mazeId, function cbGetMaze(err: Error, numRemoved: number) {
-    //             assert.equal(numRemoved, 1);
-    //             done();
-    //         });
-    //     });
-    // });
+    describe('removeDocument(maze)', () => {
+        it('numRemoved should be 1', (done) => {
+            dao.removeDocument(DATABASES.MAZES, mazeId, function cbGetMaze(err: Error, numRemoved: number) {
+                assert.equal(numRemoved, 1);
+                done();
+            });
+        });
+    });
 });

@@ -5,13 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert_1 = __importDefault(require("assert"));
 const md5_1 = __importDefault(require("md5"));
-const DAO_NeDB_1 = require("../lib/DAO_NeDB");
 const Enums_1 = require("../lib/Enums");
 const Logger_1 = require("../lib/Logger");
 const Maze_1 = require("../lib/Maze");
 const Position_1 = __importDefault(require("../lib/Position"));
+const DAO_lowdb_1 = require("../lib/DAO_lowdb");
 // static class instances
-const dao = DAO_NeDB_1.DataAccessObject_NeDB.getInstance();
+//const dao: DataAccessObject_NeDB = DataAccessObject_NeDB.getInstance();
+const dao = DAO_lowdb_1.DataAccessObject_lowdb.getInstance();
 const log = Logger_1.Logger.getInstance();
 log.setLogLevel(Logger_1.LOG_LEVELS.WARN);
 // test classes and values
@@ -105,13 +106,13 @@ describe('DAO_Local', () => {
             });
         });
     });
-    describe('removeDocument(maze)', () => {
-        it('numRemoved should be 1', (done) => {
-            dao.removeDocument(Enums_1.DATABASES.MAZES, mazeId, function cbGetMaze(err, numRemoved) {
-                assert_1.default.equal(numRemoved, 1);
-                done();
-            });
-        });
-    });
+    // describe('removeDocument(maze)', () => {
+    //     it('numRemoved should be 1', (done) => {
+    //         dao.removeDocument(DATABASES.MAZES, mazeId, function cbGetMaze(err: Error, numRemoved: number) {
+    //             assert.equal(numRemoved, 1);
+    //             done();
+    //         });
+    //     });
+    // });
 });
-//# sourceMappingURL=test.js.map
+//# sourceMappingURL=test_callbacks.1.js.map

@@ -12,8 +12,7 @@ const util_1 = require("util");
 const Logger_1 = require("./Logger");
 const Maze_1 = __importDefault(require("./Maze"));
 const Enums_1 = require("./Enums");
-//import {DataAccessObject_NeDB} from './DAO_NeDB';
-const DAO_lowdb_1 = require("../lib/DAO_lowdb");
+const DAO_NeDB_1 = require("./DAO_NeDB");
 // static class instances
 const log = Logger_1.Logger.getInstance();
 const DEFAULT_MAZE_STUB_FILE = path_1.default.resolve('data/maze-list.json');
@@ -66,8 +65,7 @@ exports.getSelectedBitNames = getSelectedBitNames;
 function generateDefaultMazes() {
     let mazeList = JSON.parse(fs_1.default.readFileSync(DEFAULT_MAZE_STUB_FILE, 'utf8'));
     let targetDb = Enums_1.DATABASES.MAZES;
-    //let dao = DataAccessObject_NeDB.getInstance();
-    let dao = DAO_lowdb_1.DataAccessObject_lowdb.getInstance();
+    let dao = DAO_NeDB_1.DataAccessObject_NeDB.getInstance();
     log.setLogLevel(Logger_1.LOG_LEVELS.DEBUG);
     for (let stub of mazeList.stubs) {
         let mazeId = util_1.format('%s:%s:%s:%s', stub.height, stub.width, stub.challenge, stub.seed);

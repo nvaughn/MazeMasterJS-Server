@@ -17,7 +17,7 @@ const express_1 = __importDefault(require("express"));
 const Enums_1 = require("./lib/Enums");
 const maze_1 = require("./routes/maze");
 const default_1 = require("./routes/default");
-const DAO_lowdb_1 = require("./lib/DAO_lowdb");
+const DAO_NeDB_1 = require("./lib/DAO_NeDB");
 // set up loggers
 const log = Logger_1.Logger.getInstance();
 log.setLogLevel(Logger_1.LOG_LEVELS.DEBUG);
@@ -27,7 +27,7 @@ const HTTP_PORT = process.env.HTTP_PORT || 80;
 const app = express_1.default();
 // get data access object instance (local NeDB connector)
 // const dao = DataAccessObject_NeDB.getInstance();
-const dao = DAO_lowdb_1.DataAccessObject_lowdb.getInstance();
+const dao = DAO_NeDB_1.DataAccessObject_NeDB.getInstance();
 // Start the Server
 startServer();
 /**
@@ -35,8 +35,13 @@ startServer();
  */
 function startServer() {
     log.info(__filename, 'startServer()', 'Server started.');
-    dao.getDocumentCount(Enums_1.DATABASES.MAZES, function cbCountMazes(err, count) {
-        if (count == 0) {
+    // let maze: Maze = new Maze().generate(10, 10, 'test kitty', 5);
+    // dao.insertDocument(DATABASES.MAZES, maze, function cbInsMaze() {
+    //     console.log('inserted');
+    // });
+    dao.getDocumentCount(Enums_1.DATABASES.MAZES, function cbMazeCount(err, mazeCount) {
+        console.log('Documents Found: ', mazeCount);
+        if (mazeCount == 0) {
             log.warn(__filename, 'startServer()', 'No maze documents found in the mazes database - generating default mazes now...');
             helpers.generateDefaultMazes();
         }

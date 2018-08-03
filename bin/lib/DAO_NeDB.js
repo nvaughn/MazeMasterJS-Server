@@ -135,11 +135,11 @@ class DataAccessObject_NeDB {
     }
     getDocumentCount(targetDb, callback) {
         let tDb = targetDb == Enums_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enums_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
-        tDb.count({}, function (err, n) {
+        tDb.count({}, function (err, count) {
             if (err)
                 throw err;
-            log.debug(__filename, 'getDocumentCount()', util_1.format('[%s] %s docs found. Callback: %s.', Enums_1.DATABASES[targetDb], n, callback.name));
-            callback(err, n);
+            log.debug(__filename, 'getDocumentCount()', util_1.format('[%s] %s docs found. Callback: %s.', Enums_1.DATABASES[targetDb], count, callback.name));
+            callback(err, count);
         });
     }
 }
