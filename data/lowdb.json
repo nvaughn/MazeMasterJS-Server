@@ -1,0 +1,140 @@
+{
+  "MAZES": [
+    {
+      "height": 3,
+      "width": 3,
+      "seed": "Tiny Trek",
+      "challenge": 1,
+      "textRender": "+ S +---+---+\n| .   .   . |\n+   +   +   +\n| .   . | . |\n+---+---+   +\n|         . |\n+---+---+ F +\n",
+      "id": "3:3:1:Tiny Trek",
+      "startCell": {
+        "row": 0,
+        "col": 0
+      },
+      "finishCell": {
+        "row": 2,
+        "col": 2
+      },
+      "shortestPathLength": 7,
+      "note": "",
+      "cells": [
+        [
+          {
+            "pos": {
+              "row": 0,
+              "col": 0
+            },
+            "exits": 7,
+            "tags": 13,
+            "traps": 0,
+            "visits": 0,
+            "lastVisit": 0,
+            "notes": []
+          },
+          {
+            "pos": {
+              "row": 0,
+              "col": 1
+            },
+            "exits": 14,
+            "tags": 12,
+            "traps": 0,
+            "visits": 0,
+            "lastVisit": 0,
+            "notes": []
+          },
+          {
+            "pos": {
+              "row": 0,
+              "col": 2
+            },
+            "exits": 10,
+            "tags": 12,
+            "traps": 0,
+            "visits": 0,
+            "lastVisit": 0,
+            "notes": []
+          }
+        ],
+        [
+          {
+            "pos": {
+              "row": 1,
+              "col": 0
+            },
+            "exits": 5,
+            "tags": 12,
+            "traps": 0,
+            "visits": 0,
+            "lastVisit": 0,
+            "notes": []
+          },
+          {
+            "pos": {
+              "row": 1,
+              "col": 1
+            },
+            "exits": 9,
+            "tags": 12,
+            "traps": 0,
+            "visits": 0,
+            "lastVisit": 0,
+            "notes": []
+          },
+          {
+            "pos": {
+              "row": 1,
+              "col": 2
+            },
+            "exits": 3,
+            "tags": 12,
+            "traps": 0,
+            "visits": 0,
+            "lastVisit": 0,
+            "notes": []
+          }
+        ],
+        [
+          {
+            "pos": {
+              "row": 2,
+              "col": 0
+            },
+            "exits": 4,
+            "tags": 8,
+            "traps": 0,
+            "visits": 0,
+            "lastVisit": 0,
+            "notes": []
+          },
+          {
+            "pos": {
+              "row": 2,
+              "col": 1
+            },
+            "exits": 12,
+            "tags": 8,
+            "traps": 0,
+            "visits": 0,
+            "lastVisit": 0,
+            "notes": []
+          },
+          {
+            "pos": {
+              "row": 2,
+              "col": 2
+            },
+            "exits": 11,
+            "tags": 14,
+            "traps": 0,
+            "visits": 0,
+            "lastVisit": 0,
+            "notes": []
+          }
+        ]
+      ]
+    }
+  ],
+  "SCORES": [],
+  "TEAMS": []
+}

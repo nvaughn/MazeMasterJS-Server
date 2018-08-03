@@ -10,13 +10,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require('dotenv').config();
 const Logger_1 = require("./lib/Logger");
-const DAO_NeDB_1 = require("./lib/DAO_NeDB");
 const helpers = __importStar(require("./lib/Helpers"));
 const express_1 = __importDefault(require("express"));
 const Enums_1 = require("./lib/Enums");
 const maze_1 = require("./routes/maze");
 const default_1 = require("./routes/default");
+const DAO_lowdb_1 = require("./lib/DAO_lowdb");
 // set up loggers
 const log = Logger_1.Logger.getInstance();
 log.setLogLevel(Logger_1.LOG_LEVELS.DEBUG);
@@ -25,7 +26,8 @@ const HTTP_PORT = process.env.HTTP_PORT || 80;
 // set up express
 const app = express_1.default();
 // get data access object instance (local NeDB connector)
-const dao = DAO_NeDB_1.DataAccessObject_NeDB.getInstance();
+// const dao = DataAccessObject_NeDB.getInstance();
+const dao = DAO_lowdb_1.DataAccessObject_lowdb.getInstance();
 // Start the Server
 startServer();
 /**

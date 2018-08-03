@@ -27,7 +27,8 @@ const mazesDbFile = 'data/mazes.db';
 const scoresDbFile = 'data/scores.db';
 const teamsDbFile = 'data/teams.db';
 const COMPRESSION_ENABLED = true; // enables inline text compression
-const COMPRESSION_ENCODING = 'Base64'; // Supported Options: Base64 (smallest and as fast as SBS), StorageBinaryString (small, fast, but unreadable), ByteArray (requires buffering)
+// Supported Options: Base64 (smallest and as fast as SBS), StorageBinaryString (small, fast, but unreadable), ByteArray (requires buffering)
+const COMPRESSION_ENCODING = 'Base64';
 class DataAccessObject_NeDB {
     // must use getInstance()
     constructor() {
@@ -53,18 +54,10 @@ class DataAccessObject_NeDB {
     // singleton instance pattern
     static getInstance() {
         if (!DataAccessObject_NeDB.instance) {
+            log.info(__filename, 'getInstance()', 'New DataAccessObject_NeDB created.');
             DataAccessObject_NeDB.instance = new DataAccessObject_NeDB();
         }
         return DataAccessObject_NeDB.instance;
-    }
-    // compresses the object for storage, retaining the object.Id needed for retrieval
-    compressObject(obj) {
-        return { id: obj.Id, docBody: lzutf8_1.default.compress(JSON.stringify(obj), { outputEncoding: COMPRESSION_ENCODING }) };
-    }
-    // decompresses the document and reconstructs the JSON object from docBody
-    decompressDocument(doc) {
-        let dDoc = lzutf8_1.default.decompress(doc.docBody, { inputEncoding: COMPRESSION_ENCODING });
-        return JSON.parse(dDoc);
     }
     insertDocument(targetDb, object, callback) {
         let fnName = 'insertDocument([DocID: ' + object.id + '])';
@@ -100,6 +93,10 @@ class DataAccessObject_NeDB {
             log.debug(__filename, fnName, util_1.format('[%s].%s completed. %s documents updated. Callback to %s.', Enums_1.DATABASES[targetDb], object.id, numReplaced, cbName));
         });
     }
+    // compresses the object for storage, retaining the object.Id needed for retrieval
+    compressObject(obj) {
+        return { id: obj.Id, docBody: lzutf8_1.default.compress(JSON.stringify(obj), { outputEncoding: COMPRESSION_ENCODING }) };
+    }
     getDocument(targetDb, objectId, callback) {
         let fnName = 'getDocument([DocID: ' + objectId + '])';
         let cbName = callback !== undefined ? callback.name : 'N/A';
@@ -115,6 +112,11 @@ class DataAccessObject_NeDB {
             log.debug(__filename, fnName, util_1.format('[%s].%s completed. Callback to %s.', Enums_1.DATABASES[targetDb], objectId, cbName));
             callback(err, doc);
         });
+    }
+    // decompresses the document and reconstructs the JSON object from docBody
+    decompressDocument(doc) {
+        let dDoc = lzutf8_1.default.decompress(doc.docBody, { inputEncoding: COMPRESSION_ENCODING });
+        return JSON.parse(dDoc);
     }
     removeDocument(targetDb, objectId, callback) {
         let fnName = 'removeDocument([DocID: ' + objectId + '])';

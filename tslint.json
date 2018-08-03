@@ -4,7 +4,9 @@
     "jsRules": {},
     "rules": {
         "quotemark": [true, "single", "avoid-escape", "avoid-template"],
-        "newspaper-order": true
+        "newspaper-order": true,
+        "max-line-length": [true, 160],
+        "jsdoc-format": true
     },
     "autoFixOnSave": true
 }

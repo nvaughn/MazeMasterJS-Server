@@ -1,12 +1,13 @@
-require ('dotenv').config();
-import { format as fmt } from 'util';
-import { Logger, LOG_LEVELS } from './lib/Logger';
-import { DataAccessObject_NeDB } from './lib/DAO_NeDB';
+require('dotenv').config();
+import {format as fmt} from 'util';
+import {Logger, LOG_LEVELS} from './lib/Logger';
 import * as helpers from './lib/Helpers';
 import express from 'express';
-import { DATABASES } from './lib/Enums';
-import { mazeRouter } from './routes/maze';
-import { defaultRouter } from './routes/default';
+import {DATABASES} from './lib/Enums';
+import {mazeRouter} from './routes/maze';
+import {defaultRouter} from './routes/default';
+import {DataAccessObject_NeDB} from './lib/DAO_NeDB';
+import {DataAccessObject_lowdb} from './lib/DAO_lowdb';
 
 // set up loggers
 const log = Logger.getInstance();
@@ -19,7 +20,8 @@ const HTTP_PORT = process.env.HTTP_PORT || 80;
 const app = express();
 
 // get data access object instance (local NeDB connector)
-const dao = DataAccessObject_NeDB.getInstance();
+// const dao = DataAccessObject_NeDB.getInstance();
+const dao = DataAccessObject_lowdb.getInstance();
 
 // Start the Server
 startServer();
