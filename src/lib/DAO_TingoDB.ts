@@ -1,14 +1,10 @@
 /**
  *
- * Data access object abstracts database implementation from server logic
- * allowing the underlying database to be replaced if needed.
+ * Implements the DataAccessObject Interface to provide a mostly MongoDB compatible
+ * abstraction layer for database operations.  This class implements a DAO for the
+ * TingoDb (www.tingodb.com) embedded, file-based, JSON data store.
  *
- * All objects passed MUST HAVE an "object.id" property that returns a unique value.
- *
- * LocalDAO wraps access to a local, document-based NO-SQL database called
- * "NeDB" that stores data as json in local text files.  The NeDB API closely
- * matches the MongoDB API, so creating a MongoDAO should be relatively easy
- * if NeDB proves unstable or doesn't perform well enough.
+ * All objects passed MUST HAVE an "id" property that returns a unique value.
  *
  */
 import Logger from './Logger';
@@ -24,7 +20,12 @@ const TDB = require('tingodb')().Db;
 const log = Logger.getInstance();
 const tingoDBDataFolder = 'data/tingo.db';
 
-const COMPRESSION_ENABLED = true; // enables inline text compression
+// Enable to compress / decompress document bodies during db insert/read calls.
+// Compression improves read/write performance of local, file-based DB functions
+// by reducing the file size on disk and limiting searchable fields in the database.
+// Note:  This breaks the DB search functionality!
+const COMPRESSION_ENABLED = true;
+
 // Supported Options: Base64 (smallest and as fast as SBS), StorageBinaryString (small, fast, but unreadable), ByteArray (requires buffering)
 const COMPRESSION_ENCODING = 'Base64';
 

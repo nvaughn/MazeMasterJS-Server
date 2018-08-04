@@ -1,4 +1,13 @@
 "use strict";
+/**
+ *
+ * Mocha-based Unit tests for Data Access Objects that implement the
+ * Data Access Object Interface (DAO_Interface).
+ *
+ * To test different DAO Implementations, change the "dao" variable
+ * to the DAO Implementation of your choosing.
+ *
+ */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };

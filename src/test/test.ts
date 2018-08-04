@@ -1,3 +1,13 @@
+/**
+ *
+ * Mocha-based Unit tests for Data Access Objects that implement the
+ * Data Access Object Interface (DAO_Interface).
+ *
+ * To test different DAO Implementations, change the "dao" variable
+ * to the DAO Implementation of your choosing.
+ *
+ */
+
 import assert from 'assert';
 import md5 from 'md5';
 import { DATABASES } from '../lib/Enums';
