@@ -7,14 +7,15 @@
  * All objects passed MUST HAVE an "id" property that returns a unique value.
  *
  */
-import Logger from './Logger';
-import pathExists from 'path-exists';
-import path from 'path';
 import fs from 'fs';
+import lzutf8 from 'lzutf8';
+import path from 'path';
+import pathExists from 'path-exists';
 import { format as fmt } from 'util';
-import lzutf8, { getRandomUTF16StringOfLength } from 'lzutf8';
-import { DATABASES } from './Enums';
+
 import { DataAccessObject } from './DAO_Interface';
+import { DATABASES } from './Enums';
+import Logger from './Logger';
 
 const TDB = require('tingodb')().Db;
 const log = Logger.getInstance();

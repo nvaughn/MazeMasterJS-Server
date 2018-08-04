@@ -12,13 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * All objects passed MUST HAVE an "id" property that returns a unique value.
  *
  */
-const Logger_1 = __importDefault(require("./Logger"));
-const path_exists_1 = __importDefault(require("path-exists"));
-const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
-const util_1 = require("util");
 const lzutf8_1 = __importDefault(require("lzutf8"));
+const path_1 = __importDefault(require("path"));
+const path_exists_1 = __importDefault(require("path-exists"));
+const util_1 = require("util");
 const Enums_1 = require("./Enums");
+const Logger_1 = __importDefault(require("./Logger"));
 const TDB = require('tingodb')().Db;
 const log = Logger_1.default.getInstance();
 const tingoDBDataFolder = 'data/tingo.db';
