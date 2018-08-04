@@ -1,17 +1,17 @@
 require('dotenv').config();
-import {format as fmt} from 'util';
-import {Logger, LOG_LEVELS} from './lib/Logger';
+import { format as fmt } from 'util';
+import { Logger, LOG_LEVELS } from './lib/Logger';
 import * as helpers from './lib/Helpers';
 import express from 'express';
-import {DATABASES} from './lib/Enums';
-import {mazeRouter} from './routes/maze';
-import {defaultRouter} from './routes/default';
-import {DataAccessObject_NeDB} from './lib/DAO_NeDB';
-import {Maze} from './lib/Maze';
+import { DATABASES } from './lib/Enums';
+import { mazeRouter } from './routes/maze';
+import { defaultRouter } from './routes/default';
+import DataAccessObject_TingoDB from './lib/DAO_TingoDB';
+import DataAccessObject_NeDB from './lib/DAO_NeDB';
 
 // set up loggers
 const log = Logger.getInstance();
-log.setLogLevel(LOG_LEVELS.DEBUG);
+log.setLogLevel(LOG_LEVELS.INFO);
 log.appInfo(__filename, '');
 
 const HTTP_PORT = process.env.HTTP_PORT || 80;
@@ -19,11 +19,10 @@ const HTTP_PORT = process.env.HTTP_PORT || 80;
 // set up express
 const app = express();
 
-// get data access object instance (local NeDB connector)
-// const dao = DataAccessObject_NeDB.getInstance();
-const dao = DataAccessObject_NeDB.getInstance();
+// get data access object instance (local TingoDB connector)
+const dao = DataAccessObject_TingoDB.getInstance();
+//const dao = DataAccessObject_NeDB.getInstance();
 
-// Start the Server
 startServer();
 
 /**
@@ -32,16 +31,11 @@ startServer();
 function startServer() {
     log.info(__filename, 'startServer()', 'Server started.');
 
-    // let maze: Maze = new Maze().generate(10, 10, 'test kitty', 5);
-    // dao.insertDocument(DATABASES.MAZES, maze, function cbInsMaze() {
-    //     console.log('inserted');
-    // });
-
     dao.getDocumentCount(DATABASES.MAZES, function cbMazeCount(err: Error, mazeCount: number) {
         console.log('Documents Found: ', mazeCount);
         if (mazeCount == 0) {
             log.warn(__filename, 'startServer()', 'No maze documents found in the mazes database - generating default mazes now...');
-            helpers.generateDefaultMazes();
+            helpers.generateDefaultMazes(dao);
         }
     });
 

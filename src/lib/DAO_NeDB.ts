@@ -13,11 +13,11 @@
  */
 import Logger from './Logger';
 import fileExists from 'file-exists';
-import {format as fmt} from 'util';
+import { format as fmt } from 'util';
 import NeDB from 'nedb';
 import lzutf8 from 'lzutf8';
-import {DATABASES} from './Enums';
-import {DataAccessObject} from './DAO_Interface';
+import { DATABASES } from './Enums';
+import { DataAccessObject } from './DAO_Interface';
 
 const log = Logger.getInstance();
 
@@ -38,20 +38,20 @@ export class DataAccessObject_NeDB implements DataAccessObject {
     // must use getInstance()
     private constructor() {
         log.info(__filename, '', fmt('%s %s', !fileExists.sync(scoresDbFile) ? 'Creating' : 'Loading', mazesDbFile));
-        this.dbMazes = new NeDB({filename: mazesDbFile, autoload: true});
-        this.dbMazes.ensureIndex({fieldName: 'id', unique: true}, function(err) {
+        this.dbMazes = new NeDB({ filename: mazesDbFile, autoload: true });
+        this.dbMazes.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + mazesDbFile, err);
         });
 
         log.info(__filename, '', fmt('%s %s', !fileExists.sync(scoresDbFile) ? 'Creating' : 'Loading', scoresDbFile));
-        this.dbScores = new NeDB({filename: scoresDbFile, autoload: true});
-        this.dbScores.ensureIndex({fieldName: 'id', unique: true}, function(err) {
+        this.dbScores = new NeDB({ filename: scoresDbFile, autoload: true });
+        this.dbScores.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + scoresDbFile, err);
         });
 
         log.info(__filename, '', fmt('%s %s', !fileExists.sync(teamsDbFile) ? 'Creating' : 'Loading', teamsDbFile));
-        this.dbTeams = new NeDB({filename: teamsDbFile, autoload: true});
-        this.dbTeams.ensureIndex({fieldName: 'id', unique: true}, function(err) {
+        this.dbTeams = new NeDB({ filename: teamsDbFile, autoload: true });
+        this.dbTeams.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + teamsDbFile, err);
         });
     }
@@ -77,9 +77,8 @@ export class DataAccessObject_NeDB implements DataAccessObject {
 
         // store the object
         tDb.insert(object, function(err, newDoc) {
-            if (err) throw err;
-            if (callback !== undefined) callback(err, newDoc);
             log.debug(__filename, fnName, fmt('[%s].%s completed. Callback to %s.', DATABASES[targetDb], object.id, cbName));
+            callback(err, newDoc);
         });
     }
 
@@ -94,16 +93,17 @@ export class DataAccessObject_NeDB implements DataAccessObject {
         if (COMPRESSION_ENABLED) object = this.compressObject(object);
 
         // attempt to update the document with the given id
-        tDb.update({id: object.id}, object, {}, function(err, numReplaced) {
-            if (err) throw err;
-            if (callback !== undefined) callback(err, numReplaced);
+        tDb.update({ id: object.id }, object, {}, (err, numReplaced) => {
             log.debug(__filename, fnName, fmt('[%s].%s completed. %s documents updated. Callback to %s.', DATABASES[targetDb], object.id, numReplaced, cbName));
+            this.getDocument(targetDb, object.id, (err: any, doc: any) => {
+                callback(err, doc);
+            });
         });
     }
 
     // compresses the object for storage, retaining the object.Id needed for retrieval
     private compressObject(obj: any): Object {
-        return {id: obj.Id, docBody: lzutf8.compress(JSON.stringify(obj), {outputEncoding: COMPRESSION_ENCODING})};
+        return { id: obj.Id, docBody: lzutf8.compress(JSON.stringify(obj), { outputEncoding: COMPRESSION_ENCODING }) };
     }
 
     public getDocument(targetDb: DATABASES, objectId: string, callback: Function) {
@@ -114,7 +114,7 @@ export class DataAccessObject_NeDB implements DataAccessObject {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
 
         // find the first matching document
-        tDb.findOne({id: objectId}, function(err, doc: any) {
+        tDb.findOne({ id: objectId }, function(err, doc: any) {
             if (err) throw err;
 
             // decompress the document if found
@@ -127,7 +127,7 @@ export class DataAccessObject_NeDB implements DataAccessObject {
 
     // decompresses the document and reconstructs the JSON object from docBody
     private decompressDocument(doc: any): Object {
-        let dDoc = lzutf8.decompress(doc.docBody, {inputEncoding: COMPRESSION_ENCODING});
+        let dDoc = lzutf8.decompress(doc.docBody, { inputEncoding: COMPRESSION_ENCODING });
         return JSON.parse(dDoc);
     }
 
@@ -140,10 +140,9 @@ export class DataAccessObject_NeDB implements DataAccessObject {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
 
         // find the first matching document
-        tDb.remove({id: objectId}, function(err, numRemoved) {
-            if (err) throw err;
-            if (callback !== undefined) callback(err, numRemoved);
+        tDb.remove({ id: objectId }, function(err, numRemoved) {
             log.debug(__filename, fnName, fmt('[%s].%s completed. %s documents removed. Callback to %s.', DATABASES[targetDb], objectId, numRemoved, cbName));
+            callback(err, { id: objectId });
         });
     }
 
@@ -154,6 +153,10 @@ export class DataAccessObject_NeDB implements DataAccessObject {
             log.debug(__filename, 'getDocumentCount()', fmt('[%s] %s docs found. Callback: %s.', DATABASES[targetDb], count, callback.name));
             callback(err, count);
         });
+    }
+
+    public closeDb() {
+        // not implemented
     }
 }
 

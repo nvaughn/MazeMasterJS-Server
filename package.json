@@ -6,7 +6,7 @@
     "scripts": {
         "watch": "nodemon ./bin/server.js",
         "start": "node ./bin/server.js",
-        "test": "mocha ./bin/test/test.js"
+        "test": "mocha -slow 0 ./bin/test/test.js"
     },
     "repository": {
         "type": "git",
@@ -32,6 +32,7 @@
         "@types/md5": "^2.1.32",
         "@types/nedb": "^1.8.5",
         "@types/node": "^10.5.3",
+        "@types/path-exists": "^3.0.0",
         "@types/pug": "^2.0.4",
         "@types/seedrandom": "^2.4.27",
         "dotenv": "^6.0.0",
@@ -40,7 +41,9 @@
         "lzutf8": "^0.5.5",
         "md5": "^2.2.1",
         "nedb": "^1.8.0",
+        "path-exists": "^3.0.0",
         "pug": "^2.0.3",
-        "seedrandom": "^2.4.3"
+        "seedrandom": "^2.4.3",
+        "tingodb": "^0.6.1"
     }
 }

@@ -69,11 +69,8 @@ class DataAccessObject_NeDB {
             object = this.compressObject(object);
         // store the object
         tDb.insert(object, function (err, newDoc) {
-            if (err)
-                throw err;
-            if (callback !== undefined)
-                callback(err, newDoc);
             log.debug(__filename, fnName, util_1.format('[%s].%s completed. Callback to %s.', Enums_1.DATABASES[targetDb], object.id, cbName));
+            callback(err, newDoc);
         });
     }
     updateDocument(targetDb, object, callback) {
@@ -85,12 +82,11 @@ class DataAccessObject_NeDB {
         if (COMPRESSION_ENABLED)
             object = this.compressObject(object);
         // attempt to update the document with the given id
-        tDb.update({ id: object.id }, object, {}, function (err, numReplaced) {
-            if (err)
-                throw err;
-            if (callback !== undefined)
-                callback(err, numReplaced);
+        tDb.update({ id: object.id }, object, {}, (err, numReplaced) => {
             log.debug(__filename, fnName, util_1.format('[%s].%s completed. %s documents updated. Callback to %s.', Enums_1.DATABASES[targetDb], object.id, numReplaced, cbName));
+            this.getDocument(targetDb, object.id, (err, doc) => {
+                callback(err, doc);
+            });
         });
     }
     // compresses the object for storage, retaining the object.Id needed for retrieval
@@ -126,11 +122,8 @@ class DataAccessObject_NeDB {
         let tDb = targetDb == Enums_1.DATABASES.MAZES ? this.dbMazes : targetDb == Enums_1.DATABASES.SCORES ? this.dbScores : this.dbTeams;
         // find the first matching document
         tDb.remove({ id: objectId }, function (err, numRemoved) {
-            if (err)
-                throw err;
-            if (callback !== undefined)
-                callback(err, numRemoved);
             log.debug(__filename, fnName, util_1.format('[%s].%s completed. %s documents removed. Callback to %s.', Enums_1.DATABASES[targetDb], objectId, numRemoved, cbName));
+            callback(err, { id: objectId });
         });
     }
     getDocumentCount(targetDb, callback) {
@@ -141,6 +134,9 @@ class DataAccessObject_NeDB {
             log.debug(__filename, 'getDocumentCount()', util_1.format('[%s] %s docs found. Callback: %s.', Enums_1.DATABASES[targetDb], count, callback.name));
             callback(err, count);
         });
+    }
+    closeDb() {
+        // not implemented
     }
 }
 exports.DataAccessObject_NeDB = DataAccessObject_NeDB;

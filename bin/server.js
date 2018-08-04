@@ -17,33 +17,28 @@ const express_1 = __importDefault(require("express"));
 const Enums_1 = require("./lib/Enums");
 const maze_1 = require("./routes/maze");
 const default_1 = require("./routes/default");
-const DAO_NeDB_1 = require("./lib/DAO_NeDB");
+const DAO_TingoDB_1 = __importDefault(require("./lib/DAO_TingoDB"));
 // set up loggers
 const log = Logger_1.Logger.getInstance();
-log.setLogLevel(Logger_1.LOG_LEVELS.DEBUG);
+log.setLogLevel(Logger_1.LOG_LEVELS.INFO);
 log.appInfo(__filename, '');
 const HTTP_PORT = process.env.HTTP_PORT || 80;
 // set up express
 const app = express_1.default();
-// get data access object instance (local NeDB connector)
-// const dao = DataAccessObject_NeDB.getInstance();
-const dao = DAO_NeDB_1.DataAccessObject_NeDB.getInstance();
-// Start the Server
+// get data access object instance (local TingoDB connector)
+const dao = DAO_TingoDB_1.default.getInstance();
+//const dao = DataAccessObject_NeDB.getInstance();
 startServer();
 /**
  * Starts up the express server
  */
 function startServer() {
     log.info(__filename, 'startServer()', 'Server started.');
-    // let maze: Maze = new Maze().generate(10, 10, 'test kitty', 5);
-    // dao.insertDocument(DATABASES.MAZES, maze, function cbInsMaze() {
-    //     console.log('inserted');
-    // });
     dao.getDocumentCount(Enums_1.DATABASES.MAZES, function cbMazeCount(err, mazeCount) {
         console.log('Documents Found: ', mazeCount);
         if (mazeCount == 0) {
             log.warn(__filename, 'startServer()', 'No maze documents found in the mazes database - generating default mazes now...');
-            helpers.generateDefaultMazes();
+            helpers.generateDefaultMazes(dao);
         }
     });
     app.use('/maze', maze_1.mazeRouter);
