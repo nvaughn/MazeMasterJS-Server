@@ -9,9 +9,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const util_1 = require("util");
+const Enums_1 = require("./Enums");
 const Logger_1 = require("./Logger");
 const Maze_1 = __importDefault(require("./Maze"));
-const Enums_1 = require("./Enums");
 // static class instances
 const log = Logger_1.Logger.getInstance();
 const DEFAULT_MAZE_STUB_FILE = path_1.default.resolve('data/maze-list.json');

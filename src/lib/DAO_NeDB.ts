@@ -13,13 +13,13 @@
  * to TingoDb.
  *
  */
-import Logger from './Logger';
-import fileExists from 'file-exists';
-import { format as fmt } from 'util';
-import NeDB from 'nedb';
 import lzutf8 from 'lzutf8';
-import { DATABASES } from './Enums';
+import NeDB from 'nedb';
+import { format as fmt } from 'util';
+
 import { DataAccessObject } from './DAO_Interface';
+import { DATABASES } from './Enums';
+import Logger from './Logger';
 
 const log = Logger.getInstance();
 
@@ -43,19 +43,19 @@ export class DataAccessObject_NeDB implements DataAccessObject {
 
     // must use getInstance()
     private constructor() {
-        log.info(__filename, '', fmt('%s %s', !fileExists.sync(scoresDbFile) ? 'Creating' : 'Loading', mazesDbFile));
+        log.info(__filename, '', fmt('Preparing database %s', mazesDbFile));
         this.dbMazes = new NeDB({ filename: mazesDbFile, autoload: true });
         this.dbMazes.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + mazesDbFile, err);
         });
 
-        log.info(__filename, '', fmt('%s %s', !fileExists.sync(scoresDbFile) ? 'Creating' : 'Loading', scoresDbFile));
+        log.info(__filename, '', fmt('Preparing database %s', mazesDbFile));
         this.dbScores = new NeDB({ filename: scoresDbFile, autoload: true });
         this.dbScores.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + scoresDbFile, err);
         });
 
-        log.info(__filename, '', fmt('%s %s', !fileExists.sync(teamsDbFile) ? 'Creating' : 'Loading', teamsDbFile));
+        log.info(__filename, '', fmt('Preparing database %s', mazesDbFile));
         this.dbTeams = new NeDB({ filename: teamsDbFile, autoload: true });
         this.dbTeams.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + teamsDbFile, err);

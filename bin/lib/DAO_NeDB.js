@@ -18,12 +18,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * to TingoDb.
  *
  */
-const Logger_1 = __importDefault(require("./Logger"));
-const file_exists_1 = __importDefault(require("file-exists"));
-const util_1 = require("util");
-const nedb_1 = __importDefault(require("nedb"));
 const lzutf8_1 = __importDefault(require("lzutf8"));
+const nedb_1 = __importDefault(require("nedb"));
+const util_1 = require("util");
 const Enums_1 = require("./Enums");
+const Logger_1 = __importDefault(require("./Logger"));
 const log = Logger_1.default.getInstance();
 const mazesDbFile = 'data/mazes.db';
 const scoresDbFile = 'data/scores.db';
@@ -38,19 +37,19 @@ const COMPRESSION_ENCODING = 'Base64';
 class DataAccessObject_NeDB {
     // must use getInstance()
     constructor() {
-        log.info(__filename, '', util_1.format('%s %s', !file_exists_1.default.sync(scoresDbFile) ? 'Creating' : 'Loading', mazesDbFile));
+        log.info(__filename, '', util_1.format('Preparing database %s', mazesDbFile));
         this.dbMazes = new nedb_1.default({ filename: mazesDbFile, autoload: true });
         this.dbMazes.ensureIndex({ fieldName: 'id', unique: true }, function (err) {
             if (err)
                 log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + mazesDbFile, err);
         });
-        log.info(__filename, '', util_1.format('%s %s', !file_exists_1.default.sync(scoresDbFile) ? 'Creating' : 'Loading', scoresDbFile));
+        log.info(__filename, '', util_1.format('Preparing database %s', mazesDbFile));
         this.dbScores = new nedb_1.default({ filename: scoresDbFile, autoload: true });
         this.dbScores.ensureIndex({ fieldName: 'id', unique: true }, function (err) {
             if (err)
                 log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + scoresDbFile, err);
         });
-        log.info(__filename, '', util_1.format('%s %s', !file_exists_1.default.sync(teamsDbFile) ? 'Creating' : 'Loading', teamsDbFile));
+        log.info(__filename, '', util_1.format('Preparing database %s', mazesDbFile));
         this.dbTeams = new nedb_1.default({ filename: teamsDbFile, autoload: true });
         this.dbTeams.ensureIndex({ fieldName: 'id', unique: true }, function (err) {
             if (err)

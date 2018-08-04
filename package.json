@@ -6,7 +6,7 @@
     "scripts": {
         "watch": "nodemon ./bin/server.js",
         "start": "node ./bin/server.js",
-        "test": "mocha -slow 0 ./bin/test/test.js"
+        "test": "mocha -slow 0 ./bin/test/"
     },
     "repository": {
         "type": "git",
@@ -27,7 +27,6 @@
     },
     "dependencies": {
         "@types/express": "^4.16.0",
-        "@types/file-exists": "^4.0.0",
         "@types/lowdb": "^1.0.5",
         "@types/md5": "^2.1.32",
         "@types/nedb": "^1.8.5",
@@ -37,7 +36,6 @@
         "@types/seedrandom": "^2.4.27",
         "dotenv": "^6.0.0",
         "express": "^4.16.3",
-        "file-exists": "^5.0.1",
         "lzutf8": "^0.5.5",
         "md5": "^2.2.1",
         "nedb": "^1.8.0",

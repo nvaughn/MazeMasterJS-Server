@@ -1,9 +1,10 @@
-import Cell from './Cell';
 import seedrandom from 'seedrandom';
+import { format as fmt } from 'util';
+
+import Cell from './Cell';
+import { CELL_TAGS, CELL_TRAPS, DIRS } from './Enums';
 import Logger from './Logger';
 import { Position } from './Position';
-import { DIRS, CELL_TAGS, CELL_TRAPS } from './Enums';
-import { format as fmt } from 'util';
 
 const log = Logger.getInstance();
 const MAX_CELL_COUNT = 2500; // control max maze size to prevent overflow due to recursion errors
@@ -499,9 +500,15 @@ export class Maze {
                 // traps only allowed if there are open cells on either side to allow jumping
                 // traps on the solution path will be removed when solution is
                 let exits = cell.getExits();
-                let trapAllowed = !!(exits & DIRS.NORTH) && !!(exits & DIRS.SOUTH); // north-south safe to jump
-                if (!trapAllowed) trapAllowed = !!(exits & DIRS.EAST) && !!(exits & DIRS.WEST); // not north-south save, but east-west safe to jump?
-                if (trapAllowed && this.challenge < MIN_TRAPS_ON_PATH_CHALLENGE_LEVEL) trapAllowed = !(cell.getTags() & CELL_TAGS.PATH); // No traps on solution path for easier mazes
+
+                // north-south safe to jump
+                let trapAllowed = !!(exits & DIRS.NORTH) && !!(exits & DIRS.SOUTH);
+
+                // not north-south save, but east-west safe to jump?
+                if (!trapAllowed) trapAllowed = !!(exits & DIRS.EAST) && !!(exits & DIRS.WEST);
+
+                // No traps on solution path for easier mazes
+                if (trapAllowed && this.challenge < MIN_TRAPS_ON_PATH_CHALLENGE_LEVEL) trapAllowed = !(cell.getTags() & CELL_TAGS.PATH);
 
                 // now make sure that we don't double up on traps, making them not jumpable
                 if (trapAllowed && y > 0 && !!(exits & DIRS.NORTH)) trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, DIRS.NORTH));

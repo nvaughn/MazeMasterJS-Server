@@ -4,9 +4,10 @@
 import fs from 'fs';
 import path from 'path';
 import { format as fmt } from 'util';
-import { Logger, LOG_LEVELS } from './Logger';
-import Maze from './Maze';
+
 import { DATABASES } from './Enums';
+import { Logger } from './Logger';
+import Maze from './Maze';
 
 // static class instances
 const log = Logger.getInstance();

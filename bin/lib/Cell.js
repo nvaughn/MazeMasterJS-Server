@@ -8,10 +8,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("util");
-const Logger_1 = require("./Logger");
 const Enums_1 = require("./Enums");
-const Position_1 = require("./Position");
 const Helpers = __importStar(require("./Helpers"));
+const Logger_1 = require("./Logger");
+const Position_1 = require("./Position");
 /**
  * Used to determine mode of functions modifying cell exits
  */

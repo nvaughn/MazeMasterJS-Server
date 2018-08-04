@@ -3,12 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const Cell_1 = __importDefault(require("./Cell"));
 const seedrandom_1 = __importDefault(require("seedrandom"));
+const util_1 = require("util");
+const Cell_1 = __importDefault(require("./Cell"));
+const Enums_1 = require("./Enums");
 const Logger_1 = __importDefault(require("./Logger"));
 const Position_1 = require("./Position");
-const Enums_1 = require("./Enums");
-const util_1 = require("util");
 const log = Logger_1.default.getInstance();
 const MAX_CELL_COUNT = 2500; // control max maze size to prevent overflow due to recursion errors
 const MIN_MAZE_DIMENSION_SIZE = 3; // The smallest allowed maze height & width
@@ -416,11 +416,14 @@ class Maze {
                 // traps only allowed if there are open cells on either side to allow jumping
                 // traps on the solution path will be removed when solution is
                 let exits = cell.getExits();
-                let trapAllowed = !!(exits & Enums_1.DIRS.NORTH) && !!(exits & Enums_1.DIRS.SOUTH); // north-south safe to jump
+                // north-south safe to jump
+                let trapAllowed = !!(exits & Enums_1.DIRS.NORTH) && !!(exits & Enums_1.DIRS.SOUTH);
+                // not north-south save, but east-west safe to jump?
                 if (!trapAllowed)
-                    trapAllowed = !!(exits & Enums_1.DIRS.EAST) && !!(exits & Enums_1.DIRS.WEST); // not north-south save, but east-west safe to jump?
+                    trapAllowed = !!(exits & Enums_1.DIRS.EAST) && !!(exits & Enums_1.DIRS.WEST);
+                // No traps on solution path for easier mazes
                 if (trapAllowed && this.challenge < MIN_TRAPS_ON_PATH_CHALLENGE_LEVEL)
-                    trapAllowed = !(cell.getTags() & Enums_1.CELL_TAGS.PATH); // No traps on solution path for easier mazes
+                    trapAllowed = !(cell.getTags() & Enums_1.CELL_TAGS.PATH);
                 // now make sure that we don't double up on traps, making them not jumpable
                 if (trapAllowed && y > 0 && !!(exits & Enums_1.DIRS.NORTH))
                     trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, Enums_1.DIRS.NORTH));
