@@ -13,8 +13,11 @@
  * to TingoDb.
  *
  */
+import fs from 'fs';
 import lzutf8 from 'lzutf8';
 import NeDB from 'nedb';
+import path from 'path';
+import pathExists from 'path-exists';
 import { format as fmt } from 'util';
 
 import { DataAccessObject } from './DAO_Interface';
@@ -23,9 +26,10 @@ import Logger from './Logger';
 
 const log = Logger.getInstance();
 
-const mazesDbFile = 'data/mazes.db';
-const scoresDbFile = 'data/scores.db';
-const teamsDbFile = 'data/teams.db';
+const nedbDataPath = 'data/nedb/';
+const mazesDbFile = nedbDataPath + 'mazes.col';
+const scoresDbFile = nedbDataPath + 'scores.col';
+const teamsDbFile = nedbDataPath + 'teams.col';
 
 // Enable to compress / decompress document bodies during db insert/read calls.
 // Compression improves read/write performance of local, file-based DB functions
@@ -43,6 +47,12 @@ export class DataAccessObject_NeDB implements DataAccessObject {
 
     // must use getInstance()
     private constructor() {
+        let fp = path.resolve(nedbDataPath);
+        if (!pathExists.sync(fp)) {
+            log.info(__filename, '', fp + ' not found, creating.');
+            fs.mkdirSync(fp);
+        }
+
         log.info(__filename, '', fmt('Preparing database %s', mazesDbFile));
         this.dbMazes = new NeDB({ filename: mazesDbFile, autoload: true });
         this.dbMazes.ensureIndex({ fieldName: 'id', unique: true }, function(err) {

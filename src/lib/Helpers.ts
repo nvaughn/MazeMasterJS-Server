@@ -62,11 +62,14 @@ export function getSelectedBitNames(bitwiseEnum: Object, selectedBits: number): 
     return ret;
 }
 
+/**
+ * Generates a series of default mazes and stores them using the given data access object
+ *
+ * @param dao - The Data Access Object to use for storing the new maze data
+ */
 export function generateDefaultMazes(dao: any) {
     let mazeList = JSON.parse(fs.readFileSync(DEFAULT_MAZE_STUB_FILE, 'utf8'));
     let targetDb = DATABASES.MAZES;
-
-    //    log.setLogLevel(LOG_LEVELS.DEBUG);
 
     for (let stub of mazeList.stubs) {
         let mazeId = fmt('%s:%s:%s:%s', stub.height, stub.width, stub.challenge, stub.seed);

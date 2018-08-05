@@ -7,34 +7,26 @@
  * to the DAO Implementation of your choosing.
  *
  */
-
 import assert from 'assert';
-import md5 from 'md5';
+
+import DataAccessObject_TingoDB from '../lib/DAO_TingoDB';
 import { DATABASES } from '../lib/Enums';
 import { LOG_LEVELS, Logger } from '../lib/Logger';
 import { Maze } from '../lib/Maze';
-import Position from '../lib/Position';
-import DataAccessObject_TingoDB from '../lib/DAO_TingoDB';
-import DataAccessObject_NeDB from '../lib/DAO_NeDB';
 
-// static class instances
-let dao: any;
-
+// set up logger
 const log: Logger = Logger.getInstance();
-log.setLogLevel(LOG_LEVELS.WARN);
+log.setLogLevel(LOG_LEVELS.NONE);
 
-// test classes and values
-let maze: Maze;
+// globals
+let dao: DataAccessObject_TingoDB = DataAccessObject_TingoDB.getInstance();
+const maze: Maze = new Maze();
 const noteA = '';
 const noteB = 'Hello MazeMasterJS';
-const mazeId: string = '3:3:5:MochaTestMaze';
-const mazeRenderHashA = '0a57600e3b025972b5f30482ae692682';
-const mazeRenderHashB = '711f426d24b0e6d39403910fc34d5284';
 
 before(() => {
     // runs before all tests in this block
-    dao = DataAccessObject_TingoDB.getInstance();
-    //dao = DataAccessObject_NeDB.getInstance();
+    maze.generate(3, 3, 'MochaTestMaze', 5);
 });
 
 after(() => {
@@ -42,58 +34,17 @@ after(() => {
 });
 
 /**
- * Maze class test cases:
- *  + instantiation (new)
- *  + instantiation (from data)
- *  + generation
- *  + text rendering
- */
-describe('Maze', () => {
-    describe('Maze.generate(height, width, seed, challenge))', () => {
-        it('should generate new maze without error: ' + mazeId, done => {
-            maze = new Maze();
-            maze.generate(3, 3, 'MochaTestMaze', 5);
-            done();
-        });
-    });
-    describe('Maze.Id', () => {
-        it('should return id ' + mazeId + '', done => {
-            assert.equal(maze.Id, mazeId);
-            done();
-        });
-    });
-    describe('Maze.TextRender()', () => {
-        it('should return return text rendering with MD5 hash value of ' + mazeRenderHashA + '', done => {
-            assert.equal(mazeRenderHashA, md5(maze.TextRender));
-            done();
-        });
-    });
-    describe('Maze.generateTextRender(forceRegen=false)', () => {
-        it('should return return text rendering with MD5 hash value of ' + mazeRenderHashA + '', done => {
-            assert.equal(mazeRenderHashA, md5(maze.generateTextRender(false)));
-            done();
-        });
-    });
-    describe('Maze.generateTextRender(forceRegen=true, playerPos=(2,2))', () => {
-        it('should return return text rendering with MD5 hash value of ' + mazeRenderHashB + '', done => {
-            assert.equal(mazeRenderHashB, md5(maze.generateTextRender(true, new Position(1, 1))));
-            done();
-        });
-    });
-});
-
-/**
  * Test CRUD operations against local maze database
  */
-describe('DAO_Local', () => {
+describe('DataAccessObject_TingoDB', () => {
     describe('insertDocument(maze)', () => {
-        it('newDoc inserted without error, newDoc.id should be ' + mazeId, done => {
+        it('newDoc inserted without error, newDoc.id should be ' + maze.Id, done => {
             dao.insertDocument(DATABASES.MAZES, maze, function cbInsertMazeTest(err: Error, newDoc: any) {
                 try {
                     assert.equal(err, null, 'error returned');
                     assert.notEqual(newDoc, undefined, 'newDoc is undefined');
                     if (newDoc) {
-                        assert.equal(newDoc.id, mazeId);
+                        assert.equal(newDoc.id, maze.Id);
                     }
                     done();
                 } catch (error) {
@@ -102,7 +53,7 @@ describe('DAO_Local', () => {
             });
         });
 
-        it('Should return unique id error inserting duplicate maze w/ ID=' + mazeId, done => {
+        it('Should return unique id error inserting duplicate maze', done => {
             dao.insertDocument(DATABASES.MAZES, maze, function cbUniqueIdTest(err: Error, newDoc: any) {
                 assert.notEqual(err, null);
                 done();
@@ -111,13 +62,13 @@ describe('DAO_Local', () => {
     });
 
     describe('getDocument(maze)', () => {
-        it('doc.note should be empty, doc.id should be ' + mazeId, done => {
-            dao.getDocument(DATABASES.MAZES, mazeId, function cbGetMaze(err: Error, doc: any) {
+        it('doc.note should be empty, doc.id should be ' + maze.Id, done => {
+            dao.getDocument(DATABASES.MAZES, maze.Id, function cbGetMaze(err: Error, doc: any) {
                 try {
                     assert.equal(err, null, 'error returned');
                     assert.notEqual(doc, undefined, 'doc is undefined');
                     if (doc) {
-                        assert.equal(doc.id, mazeId);
+                        assert.equal(doc.id, maze.Id);
                         assert.equal(doc.note, noteA);
                     }
                     done();
@@ -134,7 +85,7 @@ describe('DAO_Local', () => {
             dao.updateDocument(DATABASES.MAZES, maze, function cbUpdateMaze(err: Error, doc: any) {
                 try {
                     assert.equal(err, null, 'error returned');
-                    assert.notEqual(doc, undefined, 'doc is undefined');
+                    assert.notEqual(doc, undefined);
                     if (doc) {
                         assert.equal(doc.note, noteB);
                     }
@@ -146,8 +97,8 @@ describe('DAO_Local', () => {
         });
     });
 
-    describe('countDocuments', () => {
-        it('should return integer', done => {
+    describe('countDocuments()', () => {
+        it('should return number', done => {
             dao.getDocumentCount(DATABASES.MAZES, function cbGetMazeCount(err: Error, count: number) {
                 try {
                     assert.equal(err, null, 'error returned');
@@ -162,12 +113,12 @@ describe('DAO_Local', () => {
 
     describe('removeDocument(maze)', () => {
         it('should return removed document without error', done => {
-            dao.removeDocument(DATABASES.MAZES, mazeId, function cbRemoveMaze(err: Error, doc: any) {
+            dao.removeDocument(DATABASES.MAZES, maze.Id, function cbRemoveMaze(err: Error, doc: any) {
                 try {
                     assert.equal(err, null, 'error returned');
                     assert.notEqual(doc, undefined, 'doc is undefined');
                     if (doc) {
-                        assert.equal(doc.id, mazeId);
+                        assert.equal(doc.id, maze.Id);
                     }
                     done();
                 } catch (error) {

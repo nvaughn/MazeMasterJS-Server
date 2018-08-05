@@ -143,7 +143,7 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
         // store the object
         tColl.insert(object, { fullResult: true }, function(err: any, newDoc: any) {
             if (err) {
-                log.error(__filename, 'insertDocument', 'Error inserting document.', err);
+                log.error(__filename, fnName, 'Error inserting document.', err);
             } else {
                 log.debug(__filename, fnName, fmt('[%s].%s completed. Callback to %s.', DATABASES[targetRepo], object.id, cbName));
             }
@@ -170,7 +170,7 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
         // attempt to update the document with the given id
         tColl.findAndModify({ id: object.id }, [['id', 1]], { $set: object }, { new: true }, (err: any, doc: any) => {
             if (err) {
-                log.error(__filename, 'updateDocument', 'Error error updating document.', err);
+                log.error(__filename, fnName, 'Error error updating document.', err);
             } else {
                 log.debug(__filename, fnName, fmt('[%s].%s completed. %s documents updated. Callback to %s.', DATABASES[targetRepo], object.id, doc, cbName));
             }
@@ -195,9 +195,34 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
         // find the first matching document
         tColl.findOne({ id: objectId }, (err: any, doc: any) => {
             if (err) {
-                log.error(__filename, 'insertDocument', 'Error inserting document.', err);
+                log.error(__filename, fnName, 'Error finding document.', err);
             } else {
                 log.debug(__filename, fnName, fmt('[%s].%s completed. Callback to %s.', DATABASES[targetRepo], objectId, cbName));
+            }
+            if (doc && COMPRESSION_ENABLED) doc = this.decompressDocument(doc);
+            callback(err, doc);
+        });
+    }
+
+    /**
+     * Returns the first document found with the given id
+     * @param targetRepo - target database/collection
+     * @param objectId - the id of the object to find
+     * @param callback - error and/or located document returned via callback
+     */
+    public getDocuments(targetRepo: DATABASES, filter: string, callback: Function) {
+        let fnName = 'getDocuments([Filter: ' + filter + '])';
+
+        // set a database reference object
+        let tColl = this.getTargetRepository(targetRepo);
+
+        // find the first matching document
+        // TODO: Parse and decompress docs
+        tColl.find(filter, (err: any, doc: any) => {
+            if (err) {
+                log.error(__filename, fnName, 'Error inserting document.', err);
+            } else {
+                log.debug(__filename, fnName, fmt('[%s].%s completed. Callback to %s.', DATABASES[targetRepo], filter, callback.name));
             }
             if (doc && COMPRESSION_ENABLED) doc = this.decompressDocument(doc);
             callback(err, doc);
