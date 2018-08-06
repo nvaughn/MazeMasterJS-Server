@@ -1,9 +1,10 @@
-import {DATABASES} from './Enums';
+import { DATABASES } from './Enums';
 
 export interface DataAccessObject {
-    insertDocument(targetDb: DATABASES, object: any, callback: Function): any;
-    updateDocument(targetDb: DATABASES, object: any, callback: Function): any;
-    getDocument(targetDb: DATABASES, objectId: string, callback: Function): any;
-    removeDocument(targetDb: DATABASES, objectId: string, callback: Function): any;
-    getDocumentCount(targetDb: DATABASES, callback: Function): any;
+    insertDocument(targetRepo: DATABASES, object: any, callback: Function): any;
+    updateDocument(targetRepo: DATABASES, object: any, callback: Function): any;
+    getDocument(targetRepo: DATABASES, objectId: string, callback: Function): any;
+    removeDocument(targetRepo: DATABASES, objectId: string, callback: Function): any;
+    getDocumentCount(targetRepo: DATABASES, callback: Function): any;
+    closeDb(): any;
 }

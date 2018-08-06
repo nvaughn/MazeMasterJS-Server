@@ -1,31 +1,41 @@
 /**
  *
- * Data access object abstracts database implementation from server logic
- * allowing the underlying database to be replaced if needed.
+ * Implements the DataAccessObject Interface to provide a mostly MongoDB compatible
+ * abstraction layer for database operations.
  *
- * All objects passed MUST HAVE an "object.id" property that returns a unique value.
+ * This class implements a DAO for the NeDB (https://www.npmjs.com/package/nedb) embedded, file-based,
+ * JSON data store.
  *
- * LocalDAO wraps access to a local, document-based NO-SQL database called
- * "NeDB" that stores data as json in local text files.  The NeDB API closely
- * matches the MongoDB API, so creating a MongoDAO should be relatively easy
- * if NeDB proves unstable or doesn't perform well enough.
+ * All objects passed MUST HAVE an "id" property that returns a unique value.
+ *
+ * WARNING: NeDB does NOT work correctly in virtualized host environments due to a problem
+ * with flushToDisk.  NeDB is no longer supported by the author(s), so I've switched over
+ * to TingoDb.
  *
  */
-import Logger from './Logger';
-import fileExists from 'file-exists';
-import {format as fmt} from 'util';
-import NeDB from 'nedb';
+import fs from 'fs';
 import lzutf8 from 'lzutf8';
-import {DATABASES} from './Enums';
+import NeDB from 'nedb';
+import path from 'path';
+import pathExists from 'path-exists';
+import {format as fmt} from 'util';
+
 import {DataAccessObject} from './DAO_Interface';
+import {DATABASES} from './Enums';
+import Logger from './Logger';
 
 const log = Logger.getInstance();
 
-const mazesDbFile = 'data/mazes.db';
-const scoresDbFile = 'data/scores.db';
-const teamsDbFile = 'data/teams.db';
+const nedbDataPath = 'data/nedb/';
+const mazesDbFile = nedbDataPath + 'mazes.col';
+const scoresDbFile = nedbDataPath + 'scores.col';
+const teamsDbFile = nedbDataPath + 'teams.col';
 
-const COMPRESSION_ENABLED = true; // enables inline text compression
+// Enable to compress / decompress document bodies during db insert/read calls.
+// Compression improves read/write performance of local, file-based DB functions
+// by reducing the file size on disk and limiting searchable fields in the database.
+// WARNING:  This breaks the DB search functionality!
+const COMPRESSION_ENABLED = true;
 // Supported Options: Base64 (smallest and as fast as SBS), StorageBinaryString (small, fast, but unreadable), ByteArray (requires buffering)
 const COMPRESSION_ENCODING = 'Base64';
 
@@ -37,19 +47,25 @@ export class DataAccessObject_NeDB implements DataAccessObject {
 
     // must use getInstance()
     private constructor() {
-        log.info(__filename, '', fmt('%s %s', !fileExists.sync(scoresDbFile) ? 'Creating' : 'Loading', mazesDbFile));
+        let fp = path.resolve(nedbDataPath);
+        if (!pathExists.sync(fp)) {
+            log.info(__filename, '', fp + ' not found, creating.');
+            fs.mkdirSync(fp);
+        }
+
+        log.info(__filename, '', fmt('Preparing database %s', mazesDbFile));
         this.dbMazes = new NeDB({filename: mazesDbFile, autoload: true});
         this.dbMazes.ensureIndex({fieldName: 'id', unique: true}, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + mazesDbFile, err);
         });
 
-        log.info(__filename, '', fmt('%s %s', !fileExists.sync(scoresDbFile) ? 'Creating' : 'Loading', scoresDbFile));
+        log.info(__filename, '', fmt('Preparing database %s', scoresDbFile));
         this.dbScores = new NeDB({filename: scoresDbFile, autoload: true});
         this.dbScores.ensureIndex({fieldName: 'id', unique: true}, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + scoresDbFile, err);
         });
 
-        log.info(__filename, '', fmt('%s %s', !fileExists.sync(teamsDbFile) ? 'Creating' : 'Loading', teamsDbFile));
+        log.info(__filename, '', fmt('Preparing database %s', teamsDbFile));
         this.dbTeams = new NeDB({filename: teamsDbFile, autoload: true});
         this.dbTeams.ensureIndex({fieldName: 'id', unique: true}, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + teamsDbFile, err);
@@ -77,9 +93,8 @@ export class DataAccessObject_NeDB implements DataAccessObject {
 
         // store the object
         tDb.insert(object, function(err, newDoc) {
-            if (err) throw err;
-            if (callback !== undefined) callback(err, newDoc);
             log.debug(__filename, fnName, fmt('[%s].%s completed. Callback to %s.', DATABASES[targetDb], object.id, cbName));
+            callback(err, newDoc);
         });
     }
 
@@ -94,10 +109,11 @@ export class DataAccessObject_NeDB implements DataAccessObject {
         if (COMPRESSION_ENABLED) object = this.compressObject(object);
 
         // attempt to update the document with the given id
-        tDb.update({id: object.id}, object, {}, function(err, numReplaced) {
-            if (err) throw err;
-            if (callback !== undefined) callback(err, numReplaced);
+        tDb.update({id: object.id}, object, {}, (err, numReplaced) => {
             log.debug(__filename, fnName, fmt('[%s].%s completed. %s documents updated. Callback to %s.', DATABASES[targetDb], object.id, numReplaced, cbName));
+            this.getDocument(targetDb, object.id, (err: any, doc: any) => {
+                callback(err, doc);
+            });
         });
     }
 
@@ -141,9 +157,8 @@ export class DataAccessObject_NeDB implements DataAccessObject {
 
         // find the first matching document
         tDb.remove({id: objectId}, function(err, numRemoved) {
-            if (err) throw err;
-            if (callback !== undefined) callback(err, numRemoved);
             log.debug(__filename, fnName, fmt('[%s].%s completed. %s documents removed. Callback to %s.', DATABASES[targetDb], objectId, numRemoved, cbName));
+            callback(err, {id: objectId});
         });
     }
 
@@ -154,6 +169,10 @@ export class DataAccessObject_NeDB implements DataAccessObject {
             log.debug(__filename, 'getDocumentCount()', fmt('[%s] %s docs found. Callback: %s.', DATABASES[targetDb], count, callback.name));
             callback(err, count);
         });
+    }
+
+    public closeDb() {
+        // not implemented
     }
 }
 

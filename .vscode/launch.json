@@ -7,9 +7,17 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Mocha Tests",
+            "name": "[TEST] Maze Tests",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-            "args": ["-u", "tdd", "--timeout", "999999", "--colors", "${workspaceFolder}\\bin\\test\\test.js"],
+            "args": ["-u", "tdd", "--timeout", "999999", "--colors", "${workspaceFolder}\\bin\\test\\Maze_Tests.js"],
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "[TEST] All Tests",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "args": ["-u", "tdd", "--timeout", "999999", "--colors", "${workspaceFolder}\\bin\\test\\*.js"],
             "internalConsoleOptions": "openOnSessionStart"
         },
         {

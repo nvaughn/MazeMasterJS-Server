@@ -1,8 +1,9 @@
 import { format } from 'util';
-import { Logger } from './Logger';
-import { DIRS, CELL_TAGS, CELL_TRAPS } from './Enums';
-import { Position } from './Position';
+
+import { CELL_TAGS, CELL_TRAPS, DIRS } from './Enums';
 import * as Helpers from './Helpers';
+import { Logger } from './Logger';
+import { Position } from './Position';
 
 /**
  * Used to determine mode of functions modifying cell exits

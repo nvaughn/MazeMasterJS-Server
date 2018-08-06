@@ -3,11 +3,11 @@
  */
 import fs from 'fs';
 import path from 'path';
-import {format as fmt} from 'util';
-import {Logger, LOG_LEVELS} from './Logger';
+import { format as fmt } from 'util';
+
+import { DATABASES } from './Enums';
+import { Logger } from './Logger';
 import Maze from './Maze';
-import {DATABASES} from './Enums';
-import {DataAccessObject_NeDB} from './DAO_NeDB';
 
 // static class instances
 const log = Logger.getInstance();
@@ -62,12 +62,14 @@ export function getSelectedBitNames(bitwiseEnum: Object, selectedBits: number): 
     return ret;
 }
 
-export function generateDefaultMazes() {
+/**
+ * Generates a series of default mazes and stores them using the given data access object
+ *
+ * @param dao - The Data Access Object to use for storing the new maze data
+ */
+export function generateDefaultMazes(dao: any) {
     let mazeList = JSON.parse(fs.readFileSync(DEFAULT_MAZE_STUB_FILE, 'utf8'));
     let targetDb = DATABASES.MAZES;
-    let dao = DataAccessObject_NeDB.getInstance();
-
-    log.setLogLevel(LOG_LEVELS.DEBUG);
 
     for (let stub of mazeList.stubs) {
         let mazeId = fmt('%s:%s:%s:%s', stub.height, stub.width, stub.challenge, stub.seed);
