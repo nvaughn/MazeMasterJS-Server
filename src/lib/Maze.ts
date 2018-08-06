@@ -1,10 +1,10 @@
 import seedrandom from 'seedrandom';
-import { format as fmt } from 'util';
+import {format as fmt} from 'util';
 
 import Cell from './Cell';
-import { CELL_TAGS, CELL_TRAPS, DIRS } from './Enums';
+import {CELL_TAGS, CELL_TRAPS, DIRS} from './Enums';
 import Logger from './Logger';
-import { Position } from './Position';
+import {Position} from './Position';
 
 const log = Logger.getInstance();
 const MAX_CELL_COUNT = 2500; // control max maze size to prevent overflow due to recursion errors
@@ -34,7 +34,7 @@ export class Maze {
 
     /**
      * Instantiates or new or pre-loaded Maze object
-     * @param data - IMaze interface pre-filled with required data
+     * @param data - JSON Object containing stubbed maze data
      */
     constructor(data?: Maze) {
         if (data !== undefined) {
@@ -64,8 +64,11 @@ export class Maze {
         }
     }
 
-    // actually have to rebuild the entire cells array
-    // to repopulate an object from json
+    /**
+     * Rebuild the maze array from the given data to instantiate
+     * each individual Cell object
+     * @param cells
+     */
     private buildCellsArray(cells: Array<Array<Cell>>): Array<Array<Cell>> {
         let newCells = new Array(this.height);
 
@@ -150,7 +153,7 @@ export class Maze {
         // implement random seed
         if (seed && seed.length > 0) {
             this.seed = seed;
-            seedrandom(seed, { global: true });
+            seedrandom(seed, {global: true});
         }
 
         // set maze's ID
@@ -360,6 +363,7 @@ export class Maze {
         }
 
         this.textRender = textMaze.toString();
+        log.debug(__filename, 'this.generateTextRender', '\r\n' + this.textRender);
         return textMaze;
     }
 
@@ -409,7 +413,7 @@ export class Maze {
             playerPos.col = cell.getPos().col;
             playerPos.row = cell.getPos().row;
 
-            dirs.forEach(dir => {
+            dirs.forEach((dir) => {
                 let cLoc: Position = cell.getPos(); // current position
                 let nLoc: Position = new Position(cLoc.row, cLoc.col); // next position
 

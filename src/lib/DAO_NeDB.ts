@@ -18,10 +18,10 @@ import lzutf8 from 'lzutf8';
 import NeDB from 'nedb';
 import path from 'path';
 import pathExists from 'path-exists';
-import { format as fmt } from 'util';
+import {format as fmt} from 'util';
 
-import { DataAccessObject } from './DAO_Interface';
-import { DATABASES } from './Enums';
+import {DataAccessObject} from './DAO_Interface';
+import {DATABASES} from './Enums';
 import Logger from './Logger';
 
 const log = Logger.getInstance();
@@ -54,20 +54,20 @@ export class DataAccessObject_NeDB implements DataAccessObject {
         }
 
         log.info(__filename, '', fmt('Preparing database %s', mazesDbFile));
-        this.dbMazes = new NeDB({ filename: mazesDbFile, autoload: true });
-        this.dbMazes.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
+        this.dbMazes = new NeDB({filename: mazesDbFile, autoload: true});
+        this.dbMazes.ensureIndex({fieldName: 'id', unique: true}, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + mazesDbFile, err);
         });
 
-        log.info(__filename, '', fmt('Preparing database %s', mazesDbFile));
-        this.dbScores = new NeDB({ filename: scoresDbFile, autoload: true });
-        this.dbScores.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
+        log.info(__filename, '', fmt('Preparing database %s', scoresDbFile));
+        this.dbScores = new NeDB({filename: scoresDbFile, autoload: true});
+        this.dbScores.ensureIndex({fieldName: 'id', unique: true}, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + scoresDbFile, err);
         });
 
-        log.info(__filename, '', fmt('Preparing database %s', mazesDbFile));
-        this.dbTeams = new NeDB({ filename: teamsDbFile, autoload: true });
-        this.dbTeams.ensureIndex({ fieldName: 'id', unique: true }, function(err) {
+        log.info(__filename, '', fmt('Preparing database %s', teamsDbFile));
+        this.dbTeams = new NeDB({filename: teamsDbFile, autoload: true});
+        this.dbTeams.ensureIndex({fieldName: 'id', unique: true}, function(err) {
             if (err) log.error(__filename, 'constructor()', 'Unable to ensure unique index on field id in ' + teamsDbFile, err);
         });
     }
@@ -109,7 +109,7 @@ export class DataAccessObject_NeDB implements DataAccessObject {
         if (COMPRESSION_ENABLED) object = this.compressObject(object);
 
         // attempt to update the document with the given id
-        tDb.update({ id: object.id }, object, {}, (err, numReplaced) => {
+        tDb.update({id: object.id}, object, {}, (err, numReplaced) => {
             log.debug(__filename, fnName, fmt('[%s].%s completed. %s documents updated. Callback to %s.', DATABASES[targetDb], object.id, numReplaced, cbName));
             this.getDocument(targetDb, object.id, (err: any, doc: any) => {
                 callback(err, doc);
@@ -119,7 +119,7 @@ export class DataAccessObject_NeDB implements DataAccessObject {
 
     // compresses the object for storage, retaining the object.Id needed for retrieval
     private compressObject(obj: any): Object {
-        return { id: obj.Id, docBody: lzutf8.compress(JSON.stringify(obj), { outputEncoding: COMPRESSION_ENCODING }) };
+        return {id: obj.Id, docBody: lzutf8.compress(JSON.stringify(obj), {outputEncoding: COMPRESSION_ENCODING})};
     }
 
     public getDocument(targetDb: DATABASES, objectId: string, callback: Function) {
@@ -130,7 +130,7 @@ export class DataAccessObject_NeDB implements DataAccessObject {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
 
         // find the first matching document
-        tDb.findOne({ id: objectId }, function(err, doc: any) {
+        tDb.findOne({id: objectId}, function(err, doc: any) {
             if (err) throw err;
 
             // decompress the document if found
@@ -143,7 +143,7 @@ export class DataAccessObject_NeDB implements DataAccessObject {
 
     // decompresses the document and reconstructs the JSON object from docBody
     private decompressDocument(doc: any): Object {
-        let dDoc = lzutf8.decompress(doc.docBody, { inputEncoding: COMPRESSION_ENCODING });
+        let dDoc = lzutf8.decompress(doc.docBody, {inputEncoding: COMPRESSION_ENCODING});
         return JSON.parse(dDoc);
     }
 
@@ -156,9 +156,9 @@ export class DataAccessObject_NeDB implements DataAccessObject {
         let tDb = targetDb == DATABASES.MAZES ? this.dbMazes : targetDb == DATABASES.SCORES ? this.dbScores : this.dbTeams;
 
         // find the first matching document
-        tDb.remove({ id: objectId }, function(err, numRemoved) {
+        tDb.remove({id: objectId}, function(err, numRemoved) {
             log.debug(__filename, fnName, fmt('[%s].%s completed. %s documents removed. Callback to %s.', DATABASES[targetDb], objectId, numRemoved, cbName));
-            callback(err, { id: objectId });
+            callback(err, {id: objectId});
         });
     }
 
