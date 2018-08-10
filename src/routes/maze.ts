@@ -14,7 +14,7 @@ mazeRouter.get('/list', (req, res) => {
     log.debug(__filename, req.url, 'Returning list of mazes.');
     let mazes = dao.getDocuments(DATABASES.MAZES, '', function cbListAllMazes(err: Error, docs: any) {
         if (!err && docs) {
-            log.debug(__filename, req.url, fmt('%d maze documents found.'));
+            log.debug(__filename, req.url, fmt('%d maze documents found.', docs.length));
 
             for (let doc of docs) {
                 try {
