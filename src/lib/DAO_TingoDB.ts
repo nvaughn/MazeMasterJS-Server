@@ -218,14 +218,21 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
 
         // find the first matching document
         // TODO: Parse and decompress docs
-        tColl.find(filter, (err: any, doc: any) => {
+        tColl.find().toArray((err: any, docs: any) => {
             if (err) {
-                log.error(__filename, fnName, 'Error inserting document.', err);
+                log.error(__filename, fnName, fmt('Error finding documents with filter [%s].', filter), err);
             } else {
-                log.debug(__filename, fnName, fmt('[%s].%s completed. Callback to %s.', DATABASES[targetRepo], filter, callback.name));
+                log.debug(__filename, fnName, fmt('%d docs found using filter [%s]. Callback to %s.', docs.length, filter, callback.name));
             }
-            if (doc && COMPRESSION_ENABLED) doc = this.decompressDocument(doc);
-            callback(err, doc);
+
+            // decompress the documents before returning them
+            if (docs && COMPRESSION_ENABLED) {
+                for (var x = 0; x < docs.length; x++) {
+                    docs[x] = this.decompressDocument(docs[x]);
+                }
+            }
+
+            callback(err, docs);
         });
     }
 
@@ -264,7 +271,7 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
             if (err) {
                 log.error(__filename, 'insertDocument', 'Error inserting document.', err);
             }
-            log.debug(__filename, 'getDocumentCount()', fmt('[%s] %s docs found. Callback: %s.', DATABASES[targetRepo], count, callback.name));
+            log.debug(__filename, 'getDocumentCount()', fmt('[%s] %d docs found. Callback to %s.', DATABASES[targetRepo], count, callback.name));
             callback(err, count);
         });
     }

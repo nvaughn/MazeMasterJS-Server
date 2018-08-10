@@ -1,14 +1,36 @@
 import express from 'express';
 import DataAccessObject_TingoDB from '../lib/DAO_TingoDB';
+import Logger from '../lib/Logger';
+import {DATABASES} from '../lib/Enums';
+import {format as fmt} from 'util';
+import {Maze} from '../lib/Maze';
+
+const log = Logger.getInstance();
+const dao = DataAccessObject_TingoDB.getInstance();
+
 export const mazeRouter = express.Router();
 
-mazeRouter.get('/listAll', (req, res) => {
-    let dao = DataAccessObject_TingoDB.getInstance();
-    res.status(200).json({ message: '/maze default route' });
+mazeRouter.get('/list', (req, res) => {
+    log.debug(__filename, req.url, 'Returning list of mazes.');
+    let mazes = dao.getDocuments(DATABASES.MAZES, '', function cbListAllMazes(err: Error, docs: any) {
+        if (!err && docs) {
+            log.debug(__filename, req.url, fmt('%d maze documents found.'));
+
+            for (let doc of docs) {
+                try {
+                    let maze: Maze = new Maze(doc);
+                    log.debug(__filename, req.url, fmt('Maze ID: %s', maze.Id));
+                } catch (error) {
+                    log.error(__filename, req.url, 'Error loading maze from document.', err);
+                }
+            }
+        }
+    });
+    res.status(200).json({message: '/maze list route'});
 });
 
 mazeRouter.get('/', (req, res) => {
-    res.status(200).json({ message: '/maze default route' });
+    res.status(200).json({message: '/maze default route'});
 });
 
 export default mazeRouter;
