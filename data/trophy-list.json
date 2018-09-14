@@ -164,14 +164,14 @@
         {
             "id": 22,
             "name": "Too Hot to Handle",
-            "description": "You found, and detonated, a fire trap.  Didn't anybody every tell you not to play with fire?",
+            "description": "You found, and detonated, a fire trap. Didn't anybody every tell you not to play with fire?",
             "bonus": -75,
             "count": 0
         },
         {
             "id": 23,
             "name": "Out of Moves",
-            "description": "We gave you enough moves to visit every room of the maze... THREE TIMES... But you still used them all without finding the exit.",
+            "description": "We gave you enough moves to visit every room of the maze... THREE TIMES! You still somehow managed to use them all without finding the exit.",
             "bonus": -125,
             "count": 0
         }
