@@ -1,17 +1,17 @@
 require('dotenv').config();
-import { format as fmt } from 'util';
-import { Logger, LOG_LEVELS } from './lib/Logger';
+import {format as fmt} from 'util';
+import {Logger, LOG_LEVELS} from './lib/Logger';
 import * as helpers from './lib/Helpers';
 import express from 'express';
-import { DATABASES } from './lib/Enums';
-import { mazeRouter } from './routes/maze';
-import { defaultRouter } from './routes/default';
+import {DATABASES} from './lib/Enums';
+import {mazeRouter} from './routes/maze';
+import {defaultRouter} from './routes/default';
 import DataAccessObject_TingoDB from './lib/DAO_TingoDB';
 import DataAccessObject_NeDB from './lib/DAO_NeDB';
 
 // set up loggers
 const log = Logger.getInstance();
-log.setLogLevel(LOG_LEVELS.INFO);
+log.setLogLevel(LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
 
 const HTTP_PORT = process.env.HTTP_PORT || 80;
