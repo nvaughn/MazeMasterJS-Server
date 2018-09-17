@@ -11,10 +11,10 @@ import fs from 'fs';
 import lzutf8 from 'lzutf8';
 import path from 'path';
 import pathExists from 'path-exists';
-import {format as fmt} from 'util';
+import { format as fmt } from 'util';
 
-import {DataAccessObject} from './DAO_Interface';
-import {DATABASES} from './Enums';
+import { DataAccessObject } from './DAO_Interface';
+import { DATABASES } from './Enums';
 import Logger from './Logger';
 
 const TDB = require('tingodb')().Db;
@@ -51,15 +51,15 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
 
         // create mazes collection w/ unique index
         this.colMazes = this.db.collection('mazes.col');
-        this.colMazes.ensureIndex({id: 1}, {unique: true});
+        this.colMazes.ensureIndex({ id: 1 }, { unique: true });
 
         // create scores collection w/ unique index
         this.colScores = this.db.collection('scores.col');
-        this.colScores.ensureIndex({id: 1}, {unique: true});
+        this.colScores.ensureIndex({ id: 1 }, { unique: true });
 
         // create teams collection w/ unique index
         this.colTeams = this.db.collection('teams.col');
-        this.colTeams.ensureIndex({id: 1}, {unique: true});
+        this.colTeams.ensureIndex({ id: 1 }, { unique: true });
 
         // set ready flag
         log.info(__filename, 'constructor()', 'TingoDB and collections ready.');
@@ -112,7 +112,7 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
      * @param obj - an uncompressed object
      */
     private compressObject(obj: any): Object {
-        return {id: obj.Id, docBody: lzutf8.compress(JSON.stringify(obj), {outputEncoding: COMPRESSION_ENCODING})};
+        return { id: obj.Id, docBody: lzutf8.compress(JSON.stringify(obj), { outputEncoding: COMPRESSION_ENCODING }) };
     }
 
     /**
@@ -120,7 +120,7 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
      * @param doc - a compressed document
      */
     private decompressDocument(doc: any): Object {
-        let dDoc = lzutf8.decompress(doc.docBody, {inputEncoding: COMPRESSION_ENCODING});
+        let dDoc = lzutf8.decompress(doc.docBody, { inputEncoding: COMPRESSION_ENCODING });
         return JSON.parse(dDoc);
     }
 
@@ -141,7 +141,7 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
         if (COMPRESSION_ENABLED) object = this.compressObject(object);
 
         // store the object
-        tColl.insert(object, {fullResult: true}, function(err: any, newDoc: any) {
+        tColl.insert(object, { fullResult: true }, function(err: any, newDoc: any) {
             if (err) {
                 log.error(__filename, fnName, 'Error inserting document.', err);
             } else {
@@ -168,7 +168,7 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
         if (COMPRESSION_ENABLED) object = this.compressObject(object);
 
         // attempt to update the document with the given id
-        tColl.findAndModify({id: object.id}, [['id', 1]], {$set: object}, {new: true}, (err: any, doc: any) => {
+        tColl.findAndModify({ id: object.id }, [['id', 1]], { $set: object }, { new: true }, (err: any, doc: any) => {
             if (err) {
                 log.error(__filename, fnName, 'Error error updating document.', err);
             } else {
@@ -193,7 +193,7 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
         let tColl = this.getTargetRepository(targetRepo);
 
         // find the first matching document
-        tColl.findOne({id: objectId}, (err: any, doc: any) => {
+        tColl.findOne({ id: objectId }, (err: any, doc: any) => {
             if (err) {
                 log.error(__filename, fnName, 'Error finding document.', err);
             } else {
@@ -251,7 +251,7 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
         let tColl = this.getTargetRepository(targetRepo);
 
         // find the first matching document
-        tColl.findAndRemove({id: objectId}, [['id', 'ascending']], function(err: any, doc: any) {
+        tColl.findAndRemove({ id: objectId }, [['id', 'ascending']], function(err: any, doc: any) {
             if (err) {
                 log.error(__filename, 'insertDocument', 'Error inserting document.', err);
             }
