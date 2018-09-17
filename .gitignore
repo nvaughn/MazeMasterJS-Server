@@ -62,3 +62,8 @@ typings/
 
 # don't upload compiled ts files
 bin/
+
+# Don't upload data - the server should generate all data it needs
+# during setup / first startup.  THIS MAY CHANGE 
+data/nedb/
+data/tingo/
