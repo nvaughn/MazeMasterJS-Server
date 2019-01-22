@@ -251,7 +251,7 @@ export default class Cell {
         let trapName = CELL_TRAPS[trap];
         if (this.traps == 0) {
             this.traps = trap;
-            log.debug(__filename, 'setTrap(' + trapName + ')', format('Trap %s set on cell [%d][%d].', trapName, this.pos.row, this.pos.col));
+            log.trace(__filename, 'setTrap(' + trapName + ')', format('Trap %s set on cell [%d][%d].', trapName, this.pos.row, this.pos.col));
         } else {
             log.warn(
                 __filename,

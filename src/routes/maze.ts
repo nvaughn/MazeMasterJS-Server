@@ -1,9 +1,9 @@
 import express from 'express';
 import DataAccessObject_TingoDB from '../lib/DAO_TingoDB';
 import Logger from '../lib/Logger';
-import {DATABASES} from '../lib/Enums';
-import {format as fmt} from 'util';
-import {Maze} from '../lib/Maze';
+import { DATABASES } from '../lib/Enums';
+import { format as fmt } from 'util';
+import Maze from '../lib/Maze';
 
 const log = Logger.getInstance();
 const dao = DataAccessObject_TingoDB.getInstance();
@@ -31,8 +31,22 @@ mazeRouter.get('/list', (req, res) => {
     });
 });
 
+/**
+ * For testing maze generation algorithm - TODO: remove or replace
+ */
+mazeRouter.get('/test', (req, res) => {
+    let maze = new Maze();
+    maze.generate(25, 30, 'Deadly Dash', 6);
+    log.debug(__filename, req.url, 'Maze generation complete for "25:30:6:Deadly Dash"');
+
+    //    res.status(200).json({ message: 'Maze "25:30:6:Deadly Dash" regenerated.  New render: <br /><hr>' + maze.generateTextRender(false) });
+    res.status(200).send(
+        '<html><body>Maze "25:30:6:Deadly Dash" regenerated.  New render: <br /><hr><pre>' + maze.generateTextRender(false) + '</pre></body></html>'
+    );
+});
+
 mazeRouter.get('/', (req, res) => {
-    res.status(200).json({message: '/maze default route'});
+    res.status(200).json({ message: '/maze default route' });
 });
 
 export default mazeRouter;

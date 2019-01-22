@@ -253,9 +253,9 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
         // find the first matching document
         tColl.findAndRemove({ id: objectId }, [['id', 'ascending']], function(err: any, doc: any) {
             if (err) {
-                log.error(__filename, 'insertDocument', 'Error inserting document.', err);
+                log.error(__filename, 'removeDocument', 'Error removing document.', err);
             }
-            log.debug(__filename, fnName, fmt('[%s].%s completed. %s documents removed. Callback to %s.', DATABASES[targetRepo], objectId, doc, cbName));
+            log.debug(__filename, fnName, fmt('Action completed, callback to %s.', cbName));
             callback(err, doc);
         });
     }
@@ -266,12 +266,13 @@ export class DataAccessObject_TingoDB implements DataAccessObject {
      * @param callback - returns error / document count via callback
      */
     public getDocumentCount(targetRepo: DATABASES, callback: Function) {
+        let fnName = 'getDocumentCount(' + DATABASES[targetRepo] + ')';
         let tColl = this.getTargetRepository(targetRepo);
         tColl.find({}).count(function(err: Error, count: number) {
             if (err) {
-                log.error(__filename, 'insertDocument', 'Error inserting document.', err);
+                log.error(__filename, fnName, 'Error getting document count.', err);
             }
-            log.debug(__filename, 'getDocumentCount()', fmt('[%s] %d docs found. Callback to %s.', DATABASES[targetRepo], count, callback.name));
+            log.debug(__filename, fnName, fmt('[%s] %d docs found. Callback to %s.', DATABASES[targetRepo], count, callback.name));
             callback(err, count);
         });
     }

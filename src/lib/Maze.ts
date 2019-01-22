@@ -1,10 +1,10 @@
 import seedrandom from 'seedrandom';
-import {format as fmt} from 'util';
+import { format as fmt } from 'util';
 
 import Cell from './Cell';
-import {CELL_TAGS, CELL_TRAPS, DIRS} from './Enums';
+import { CELL_TAGS, CELL_TRAPS, DIRS } from './Enums';
 import Logger from './Logger';
-import {Position} from './Position';
+import { Position } from './Position';
 
 const log = Logger.getInstance();
 const MAX_CELL_COUNT = 2500; // control max maze size to prevent overflow due to recursion errors
@@ -153,7 +153,7 @@ export class Maze {
         // implement random seed
         if (seed && seed.length > 0) {
             this.seed = seed;
-            seedrandom(seed, {global: true});
+            seedrandom(seed, { global: true });
         }
 
         // set maze's ID
@@ -363,7 +363,6 @@ export class Maze {
         }
 
         this.textRender = textMaze.toString();
-        log.debug(__filename, 'this.generateTextRender', '\r\n' + this.textRender);
         return textMaze;
     }
 
@@ -413,7 +412,7 @@ export class Maze {
             playerPos.col = cell.getPos().col;
             playerPos.row = cell.getPos().row;
 
-            dirs.forEach((dir) => {
+            dirs.forEach(dir => {
                 let cLoc: Position = cell.getPos(); // current position
                 let nLoc: Position = new Position(cLoc.row, cLoc.col); // next position
 
@@ -502,13 +501,28 @@ export class Maze {
                 let cell = this.cells[y][x];
 
                 // traps only allowed if there are open cells on either side to allow jumping
-                // traps on the solution path will be removed when solution is
+                // traps on the solution path will be removed when solution is...  TODO: HUH?
                 let exits = cell.getExits();
+                let tags = cell.getTags();
+                let traps = cell.getTraps();
+
+                // no traps in start cell
+                if (!!(tags & CELL_TAGS.START)) {
+                    log.warn(__filename, 'addTraps()', fmt('Invalid trap location (Start Cell): ', cell.getPos().toString()));
+                    continue;
+                }
+
+                // no traps in finish cell
+                // TODO: Allow traps if there's a way to jump them?
+                if (!!(tags & CELL_TAGS.FINISH)) {
+                    log.warn(__filename, 'addTraps()', fmt('Invalid trap location (Finish Cell): ', cell.getPos().toString()));
+                    continue;
+                }
 
                 // north-south safe to jump
                 let trapAllowed = !!(exits & DIRS.NORTH) && !!(exits & DIRS.SOUTH);
 
-                // not north-south save, but east-west safe to jump?
+                // not north-south safe, but are east-west safe to jump?
                 if (!trapAllowed) trapAllowed = !!(exits & DIRS.EAST) && !!(exits & DIRS.WEST);
 
                 // No traps on solution path for easier mazes

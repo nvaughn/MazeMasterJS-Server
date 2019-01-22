@@ -1,11 +1,11 @@
 require('dotenv').config();
-import {format as fmt} from 'util';
-import {Logger, LOG_LEVELS} from './lib/Logger';
+import { format as fmt } from 'util';
+import { Logger, LOG_LEVELS } from './lib/Logger';
 import * as helpers from './lib/Helpers';
 import express from 'express';
-import {DATABASES} from './lib/Enums';
-import {mazeRouter} from './routes/maze';
-import {defaultRouter} from './routes/default';
+import { DATABASES } from './lib/Enums';
+import { mazeRouter } from './routes/maze';
+import { defaultRouter } from './routes/default';
 import DataAccessObject_TingoDB from './lib/DAO_TingoDB';
 import DataAccessObject_NeDB from './lib/DAO_NeDB';
 
@@ -40,6 +40,7 @@ function startServer() {
     });
 
     app.use('/maze', mazeRouter);
+    app.use('/test', mazeRouter);
     app.use('/', defaultRouter);
 
     app.listen(HTTP_PORT, () => {
