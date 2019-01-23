@@ -32,6 +32,9 @@ function startServer() {
     log.info(__filename, 'startServer()', 'Server started.');
 
     dao.getDocumentCount(DATABASES.MAZES, function cbMazeCount(err: Error, mazeCount: number) {
+        if (isNaN(mazeCount)) {
+            log.warn(__filename, 'startServer()', 'Unable to get maze count.');
+        }
         log.info(__filename, 'startServer()', fmt('%s maze documents found in database.', mazeCount));
         if (mazeCount == 0) {
             log.warn(__filename, 'startServer()', 'No maze documents found in the mazes database - generating default mazes now...');

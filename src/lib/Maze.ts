@@ -1,6 +1,6 @@
 import seedrandom from 'seedrandom';
 import { format as fmt } from 'util';
-
+import * as helpers from './Helpers';
 import Cell from './Cell';
 import { CELL_TAGS, CELL_TRAPS, DIRS } from './Enums';
 import Logger from './Logger';
@@ -9,7 +9,7 @@ import { Position } from './Position';
 const log = Logger.getInstance();
 const MAX_CELL_COUNT = 2500; // control max maze size to prevent overflow due to recursion errors
 const MIN_MAZE_DIMENSION_SIZE = 3; // The smallest allowed maze height & width
-const MIN_TRAPS_CHALLENGE_LEVEL = 3; // the minimum maze challenge level that allows traps
+const MIN_TRAPS_CHALLENGE_LEVEL = 1; // the minimum maze challenge level that allows traps
 const MIN_TRAPS_ON_PATH_CHALLENGE_LEVEL = 6; // the minimum maze challenge level that allows traps on the solution path
 
 let recurseDepth = 0; // tracks the level of recursion during path carving
@@ -94,7 +94,7 @@ export class Maze {
         return this.cells[pos.row][pos.col];
     }
 
-    public getCellNeighbor(cell: Cell, dir: DIRS): Cell {
+    public getNeighbor(cell: Cell, dir: DIRS): Cell {
         // move location of next cell according to random direction
         let row = cell.getPos().row;
         let col = cell.getPos().col;
@@ -492,89 +492,138 @@ export class Maze {
         return false;
     }
 
+    /**
+     * Adds traps to the maze. Trap frequency and positioning changes based on maze challenge level.
+     */
     private addTraps() {
-        log.debug(__filename, 'addTraps()', fmt('Generating traps for challenge level %s maze.', this.challenge));
-
+        let fnName = 'addTraps()';
         let trapCount = 0;
+
+        log.debug(__filename, fnName, fmt('Generating traps for challenge level %s maze.', this.challenge));
+
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
+                // made it this far - let's set some traps!
+                let trapChance = 100 - this.challenge * 10;
+                let trapRoll = Math.floor(Math.random() * 100);
                 let cell = this.cells[y][x];
 
+                if (trapRoll < trapChance) {
+                    log.trace(__filename, fnName, 'Trap Roll Failed (' + trapRoll + ' < ' + trapChance + '), no traps here :(');
+                    continue;
+                }
+
+                log.trace(__filename, fnName, 'Trap Roll Passed (' + trapRoll + ' >= ' + trapChance + '), time to set some traps! >:)');
+
                 // traps only allowed if there are open cells on either side to allow jumping
-                // traps on the solution path will be removed when solution is...  TODO: HUH?
                 let exits = cell.getExits();
                 let tags = cell.getTags();
-                let traps = cell.getTraps();
+
+                // bail out if we already have a trap here
+                if (cell.getTraps() != CELL_TRAPS.NONE) {
+                    log.trace(__filename, fnName, fmt('Invalid trap location (Already Trapped): ', cell.getPos().toString()));
+                    continue;
+                }
 
                 // no traps in start cell
                 if (!!(tags & CELL_TAGS.START)) {
-                    log.warn(__filename, 'addTraps()', fmt('Invalid trap location (Start Cell): ', cell.getPos().toString()));
+                    log.trace(__filename, fnName, fmt('Invalid trap location (Start Cell): ', cell.getPos().toString()));
                     continue;
                 }
 
                 // no traps in finish cell
                 // TODO: Allow traps if there's a way to jump them?
                 if (!!(tags & CELL_TAGS.FINISH)) {
-                    log.warn(__filename, 'addTraps()', fmt('Invalid trap location (Finish Cell): ', cell.getPos().toString()));
+                    log.trace(__filename, fnName, fmt('Invalid trap location (Finish Cell): ', cell.getPos().toString()));
                     continue;
                 }
 
-                // north-south safe to jump
-                let trapAllowed = !!(exits & DIRS.NORTH) && !!(exits & DIRS.SOUTH);
+                // traps may only occur in locations where the player can jump over them
+                // TODO: Rule may change if other ways to avoid traps (potions, items, secret doors, etc.) are added
+                if (!((!!(exits & DIRS.NORTH) && !!(exits & DIRS.SOUTH)) || (!!(exits & DIRS.EAST) && !!(exits & DIRS.WEST)))) {
+                    log.trace(__filename, fnName, fmt('Invalid trap location (Unavoidable): ', cell.getPos().toString()));
+                    continue;
+                }
 
-                // not north-south safe, but are east-west safe to jump?
-                if (!trapAllowed) trapAllowed = !!(exits & DIRS.EAST) && !!(exits & DIRS.WEST);
-
-                // No traps on solution path for easier mazes
-                if (trapAllowed && this.challenge < MIN_TRAPS_ON_PATH_CHALLENGE_LEVEL) trapAllowed = !(cell.getTags() & CELL_TAGS.PATH);
-
-                // now make sure that we don't double up on traps, making them not jumpable
-                if (trapAllowed && y > 0 && !!(exits & DIRS.NORTH)) trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, DIRS.NORTH));
-                if (trapAllowed && y < this.height - 1 && !!(exits & DIRS.SOUTH)) trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, DIRS.SOUTH));
-                if (trapAllowed && x < this.width - 1 && !!(exits & DIRS.EAST)) trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, DIRS.EAST));
-                if (trapAllowed && x > 0 && !!(exits & DIRS.WEST)) trapAllowed = !this.hasTrap(this.getCellNeighbor(cell, DIRS.WEST));
-
-                // all is well - let's roll the die a few times to see if we get a trap
-                if (trapAllowed) {
-                    let trapTries = Math.floor(this.challenge / 4);
-                    log.trace(__filename, 'addTraps()', fmt('trapTries=', trapTries));
-
-                    for (let trapCheck = 1; trapCheck <= Math.floor(this.challenge / 3); trapCheck++) {
-                        let trapNum = Math.floor(Math.random() * 13) - this.challenge + 1;
-                        log.trace(__filename, 'addTraps()', fmt('trapNum=%s', trapNum));
-                        switch (trapNum) {
-                            case 1: {
-                                cell.setTrap(CELL_TRAPS.PIT);
-                                trapCount++;
-                                break;
-                            }
-                            case 2: {
-                                cell.setTrap(CELL_TRAPS.FLAMETHOWER);
-                                trapCount++;
-                                break;
-                            }
-                            case 3: {
-                                cell.setTrap(CELL_TRAPS.BEARTRAP);
-                                trapCount++;
-                                break;
-                            }
-                            case 4: {
-                                cell.setTrap(CELL_TRAPS.TARPIT);
-                                trapCount++;
-                                break;
-                            }
-                            default: {
-                                log.trace(__filename, 'addTraps()', fmt('No hit on trap num %s', trapNum));
-                            }
-                        }
-                        if (trapNum > 0 && trapNum < 4) break;
+                // Traps on solution path have extra rules:
+                //   1) Must obey challenge level
+                //   2) Must not be placed on path along maze edges (to avoid blocking path to exit)
+                if (!!(tags & CELL_TAGS.PATH)) {
+                    // enforce challenge level settings
+                    if (this.challenge < MIN_TRAPS_ON_PATH_CHALLENGE_LEVEL) {
+                        log.trace(__filename, fnName, fmt('Invalid trap location (No Traps on Path at CL ' + this.challenge + '): ', cell.getPos().toString()));
+                        continue;
                     }
-                } else {
-                    log.trace(__filename, 'addTraps()', fmt('No room for traps.'));
+
+                    // avoid blocking solution path along edges
+                    if (cell.getPos().col == this.width - 1 || cell.getPos().col == 0 || (cell.getPos().row == this.height - 1 || cell.getPos().row == 0)) {
+                        // and avoid T-Junctions, but allow dead-ends (four-way junctions not possible on edge)
+                        if (cell.getExitCount() > 2) {
+                            log.trace(__filename, fnName, fmt('Invalid trap location (On Edge & On Path): ', cell.getPos().toString()));
+                            continue;
+                        }
+                    }
+                }
+
+                // don't double-up on traps - check north
+                if (y > 0 && !!(exits & DIRS.NORTH) && this.hasTrap(this.getNeighbor(cell, DIRS.NORTH))) {
+                    log.trace(__filename, fnName, fmt('Invalid trap location (Adjacent Trap - North): ', cell.getPos().toString()));
+                    continue;
+                }
+
+                // don't double-up on traps - check south
+                if (y < this.height - 1 && !!(exits & DIRS.SOUTH) && this.hasTrap(this.getNeighbor(cell, DIRS.SOUTH))) {
+                    log.trace(__filename, fnName, fmt('Invalid trap location (Adjacent Trap - South): ', cell.getPos().toString()));
+                    continue;
+                }
+
+                // don't double-up on traps - check east
+                if (x < this.width - 1 && !!(exits & DIRS.EAST) && this.hasTrap(this.getNeighbor(cell, DIRS.EAST))) {
+                    log.trace(__filename, fnName, fmt('Invalid trap location (Adjacent Trap - East): ', cell.getPos().toString()));
+                    continue;
+                }
+
+                // don't double-up on traps - check east
+                if (x > 0 && !!(exits & DIRS.WEST) && this.hasTrap(this.getNeighbor(cell, DIRS.WEST))) {
+                    log.trace(__filename, fnName, fmt('Invalid trap location (Adjacent Trap - West): ', cell.getPos().toString()));
+                    continue;
+                }
+
+                // randomly select which trap to lay
+                let trapNum = Math.floor(Math.random() * (Object.keys(CELL_TRAPS).length / 2));
+                log.trace(__filename, fnName, 'Setting trap #' + trapNum + ' in cell ' + cell.getPos().toString());
+                switch (trapNum) {
+                    case 0: {
+                        // zero means NONE.  Boo :(
+                        break;
+                    }
+                    case 1: {
+                        cell.setTrap(CELL_TRAPS.PIT);
+                        trapCount++;
+                        break;
+                    }
+                    case 2: {
+                        cell.setTrap(CELL_TRAPS.FLAMETHOWER);
+                        trapCount++;
+                        break;
+                    }
+                    case 3: {
+                        cell.setTrap(CELL_TRAPS.BEARTRAP);
+                        trapCount++;
+                        break;
+                    }
+                    case 4: {
+                        cell.setTrap(CELL_TRAPS.TARPIT);
+                        trapCount++;
+                        break;
+                    }
+                    default: {
+                        log.trace(__filename, fnName, fmt('Invalid trap number: %s', trapNum));
+                    }
                 }
             }
         }
-        log.debug(__filename, 'addTraps()', fmt('Trap generation complete. Total trap count=%s', trapCount));
+        log.debug(__filename, fnName, fmt('Trapping complete. Trap count: %d (%d%)', trapCount, Math.round((trapCount / (this.height * this.width)) * 100)));
     }
 
     public get Height(): number {
@@ -612,6 +661,15 @@ export class Maze {
     }
     public set Note(value: string) {
         this.note = value;
+    }
+    public getMinHeight(): number {
+        return MIN_MAZE_DIMENSION_SIZE;
+    }
+    public getMinWidth(): number {
+        return MIN_MAZE_DIMENSION_SIZE;
+    }
+    public getMaxCellCount(): number {
+        return MAX_CELL_COUNT;
     }
 }
 

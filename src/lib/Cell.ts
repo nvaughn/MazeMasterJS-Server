@@ -37,7 +37,6 @@ export default class Cell {
             this.lastVisit = data.lastVisit;
             this.notes = data.notes;
         } else {
-            //            this.pos.col = 0; // col
             this.pos = new Position(0, 0);
             this.exits = 0;
             this.tags = 0;
@@ -72,6 +71,10 @@ export default class Cell {
 
     public getExits(): number {
         return this.exits;
+    }
+
+    public getExitCount(): number {
+        return Helpers.getSelectedBitNames(DIRS, this.exits).length;
     }
 
     public listExits(): string {
@@ -253,11 +256,7 @@ export default class Cell {
             this.traps = trap;
             log.trace(__filename, 'setTrap(' + trapName + ')', format('Trap %s set on cell [%d][%d].', trapName, this.pos.row, this.pos.col));
         } else {
-            log.warn(
-                __filename,
-                'setTrap(' + trapName + ')',
-                format('Cell is already trapped: %s already set on [%d][%d].', trapName, this.pos.row, this.pos.col)
-            );
+            log.warn(__filename, 'setTrap(' + trapName + ')', format('Trap (%s) already set on cell [%d][%d].', trapName, this.pos.row, this.pos.col));
         }
     }
 
@@ -276,7 +275,7 @@ export default class Cell {
                     // force north exit on start cell - do not use addExit() for this!
                     if (!(this.exits & DIRS.NORTH)) {
                         this.exits += DIRS.NORTH;
-                        log.debug(
+                        log.trace(
                             __filename,
                             'addTag(' + tagName + ')',
                             format(
@@ -293,7 +292,7 @@ export default class Cell {
                     // force north exit on finish cell - do not use addExit() for this!
                     if (!(this.exits & DIRS.SOUTH)) {
                         this.exits += DIRS.SOUTH;
-                        log.debug(
+                        log.trace(
                             __filename,
                             'addTag(' + tagName + ')',
                             format(
