@@ -67,4 +67,4 @@ bin/
 data/
 
 # don't upload environment vars
-#.env
+.env
