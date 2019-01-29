@@ -1,4 +1,3 @@
-require('dotenv').config();
 import { format as fmt } from 'util';
 import { Logger, LOG_LEVELS } from './lib/Logger';
 import * as helpers from './lib/Helpers';
@@ -6,8 +5,8 @@ import express from 'express';
 import { DATABASES } from './lib/Enums';
 import { mazeRouter } from './routes/maze';
 import { defaultRouter } from './routes/default';
-import DataAccessObject_TingoDB from './lib/DAO_TingoDB';
-import DataAccessObject_NeDB from './lib/DAO_NeDB';
+import DataAccessObject_TingoDB from './lib/DAO_TingoDb';
+import DataAccessObject_NeDB from './lib/DAO_NeDb';
 
 // set up loggers
 const log = Logger.getInstance();

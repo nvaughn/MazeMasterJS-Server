@@ -1,5 +1,5 @@
 import express from 'express';
-import DataAccessObject_TingoDB from '../lib/DAO_TingoDB';
+import DataAccessObject_TingoDB from '../lib/DAO_TingoDb';
 import Logger from '../lib/Logger';
 import { DATABASES } from '../lib/Enums';
 import { format as fmt } from 'util';

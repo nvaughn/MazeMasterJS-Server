@@ -65,3 +65,6 @@ bin/
 
 # dont upload database files
 data/
+
+# don't upload environment vars
+#.env
