@@ -4,7 +4,8 @@
     "description": "Maze Master JS - Server",
     "main": "./bin/server.js",
     "scripts": {
-        "watch": "nodemon ./bin/server.js",
+        "watch": "nodemon -r dotenv/config ./bin/server.js",
+        "local": "node -r dotenv/config ./bin/server.js",
         "start": "node ./bin/server.js",
         "test": "mocha -slow ./bin/test/*.js"
     },
@@ -19,7 +20,9 @@
     },
     "homepage": "https://github.com/kreebog/MazeMasterJS-Server#readme",
     "devDependencies": {
+        "@types/dotenv": "^6.1.0",
         "@types/mocha": "^5.2.5",
+        "dotenv": "^6.2.0",
         "mocha": "^5.2.0",
         "tslint": "^5.12.1",
         "tslint-clean-code": "^0.2.9",
@@ -31,7 +34,7 @@
         "@types/lowdb": "^1.0.6",
         "@types/md5": "^2.1.33",
         "@types/nedb": "^1.8.7",
-        "@types/node": "^10.12.18",
+        "@types/node": "^10.12.19",
         "@types/path-exists": "^3.0.0",
         "@types/pug": "^2.0.4",
         "@types/seedrandom": "^2.4.27",

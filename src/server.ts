@@ -5,6 +5,7 @@ import express from 'express';
 import { DATABASES } from './lib/Enums';
 import { mazeRouter } from './routes/maze';
 import { defaultRouter } from './routes/default';
+import { Config } from './lib/Config';
 import DataAccessObject_TingoDB from './lib/DAO_TingoDb';
 import DataAccessObject_NeDB from './lib/DAO_NeDb';
 
@@ -13,7 +14,8 @@ const log = Logger.getInstance();
 log.setLogLevel(LOG_LEVELS.DEBUG);
 log.appInfo(__filename, '');
 
-const HTTP_PORT = process.env.HTTP_PORT || 80;
+// set up config object
+const config = Config.getInstance();
 
 // set up express
 const app = express();
@@ -45,8 +47,8 @@ function startServer() {
     app.use('/test', mazeRouter);
     app.use('/', defaultRouter);
 
-    app.listen(HTTP_PORT, () => {
-        log.info(__dirname, 'startServer()', 'MazeMasterJS HTTP Server Listening on Port ' + HTTP_PORT);
+    app.listen(config.HTTP_PORT, () => {
+        log.info(__dirname, 'startServer()', fmt('MazeMasterJS Server is UP at http://%s:%d', config.HOST_NAME, config.HTTP_PORT));
     });
 }
 
@@ -73,4 +75,5 @@ process.on('SIGTERM', function onSigTerm() {
  */
 function doShutdown() {
     log.info(__filename, 'doShutDown()', 'Closing HTTP Server connections...');
+    process.exit(0);
 }

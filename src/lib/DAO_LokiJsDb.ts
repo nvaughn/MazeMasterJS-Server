@@ -15,7 +15,6 @@
  */
 import fs from 'fs';
 import lzutf8 from 'lzutf8';
-import dot
 import lokiDb from 'lokijs';
 
 import path from 'path';
@@ -28,7 +27,11 @@ import Logger from './Logger';
 
 const log = Logger.getInstance();
 
-const LOKIJS_DATA_FILE = 'data/lokijs/mmjs-data.json';
+const LOKIJS_DATA_FILE = process.env.LOKIJS_DATA_FILE || '';
+
+if (LOKIJS_DATA_FILE == '') {
+    // throw new error();
+}
 
 const MAZE_COL = 'mazes';
 const SCORES_COL = 'scores';

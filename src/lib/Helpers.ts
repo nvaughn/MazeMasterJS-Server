@@ -4,7 +4,6 @@
 import fs from 'fs';
 import path from 'path';
 import { format as fmt } from 'util';
-
 import { DATABASES } from './Enums';
 import { Logger } from './Logger';
 import Maze from './Maze';
